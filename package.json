@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@octokit/rest": "^22.0.1",
     "@wikimedia/codex": "^2.3.0",
     "@wikimedia/codex-icons": "^2.3.0",
     "material-symbols": "^0.40.2",
