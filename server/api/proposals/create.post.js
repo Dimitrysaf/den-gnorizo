@@ -12,28 +12,22 @@ export default defineEventHandler(async (event) => {
     })
   }
   
-  // TODO: Check if user is authenticated
-  // const user = event.context.user
-  // if (!user) {
-  //   throw createError({ statusCode: 401, message: 'Unauthorized' })
-  // }
-  
   const octokit = new Octokit({ auth: config.githubToken })
   
-  // Generate unique branch name
+  // Generate branch name
   const timestamp = Date.now()
   const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
   const branchName = `proposal/${timestamp}-${slug}`
   
   try {
-    // Get main branch SHA
+    // 1. Get main branch SHA
     const { data: mainRef } = await octokit.git.getRef({
       owner: config.githubOwner,
       repo: config.githubContentRepo,
       ref: 'heads/main'
     })
     
-    // Create new branch
+    // 2. Create new branch
     await octokit.git.createRef({
       owner: config.githubOwner,
       repo: config.githubContentRepo,
@@ -41,18 +35,23 @@ export default defineEventHandler(async (event) => {
       sha: mainRef.object.sha
     })
     
-    // TODO: Save to database
-    // const db = useDatabase()
-    // const result = await db.query(
-    //   'INSERT INTO proposals (branch_name, title, description, author_id, status) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-    //   [branchName, title, description, user.id, 'open']
-    // )
+    // 3. Create Pull Request (this is the proposal!)
+    const { data: pr } = await octokit.pulls.create({
+      owner: config.githubOwner,
+      repo: config.githubContentRepo,
+      title: title,
+      head: branchName,
+      base: 'main',
+      body: description || 'Constitutional proposal',
+      draft: false
+    })
     
     return {
       success: true,
+      proposalId: pr.number,
       branchName,
-      message: 'Proposal created successfully',
-      // proposal: result.rows[0]
+      url: pr.html_url,
+      message: 'Proposal created successfully'
     }
   } catch (error) {
     console.error('Proposal creation error:', error)

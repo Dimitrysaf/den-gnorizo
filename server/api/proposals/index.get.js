@@ -1,21 +1,48 @@
+import { Octokit } from '@octokit/rest'
+
 export default defineEventHandler(async (event) => {
-    // TODO: Get from database
-    // const db = useDatabase()
-    // const proposals = await db.query('SELECT * FROM proposals ORDER BY created_at DESC')
+  const config = useRuntimeConfig()
+  const query = getQuery(event)
+  const state = query.state || 'open' // 'open', 'closed', 'all'
+  
+  const octokit = new Octokit({ auth: config.githubToken })
+  
+  try {
+    const { data: prs } = await octokit.pulls.list({
+      owner: config.githubOwner,
+      repo: config.githubContentRepo,
+      state: state,
+      per_page: 50,
+      sort: 'created',
+      direction: 'desc'
+    })
     
-    // For now, return mock data
     return {
       success: true,
-      proposals: [
-        // {
-        //   id: 1,
-        //   branch_name: 'proposal/1733234567-add-privacy-rights',
-        //   title: 'Add Digital Privacy Rights',
-        //   description: 'Proposal to add comprehensive digital privacy protections',
-        //   author_id: 1,
-        //   status: 'open',
-        //   created_at: '2024-12-09T10:00:00Z'
-        // }
-      ]
+      proposals: prs.map(pr => ({
+        id: pr.number,
+        title: pr.title,
+        description: pr.body,
+        branch: pr.head.ref,
+        status: pr.state,
+        merged: pr.merged_at !== null,
+        author: {
+          username: pr.user.login,
+          avatar: pr.user.avatar_url,
+          url: pr.user.html_url
+        },
+        createdAt: pr.created_at,
+        updatedAt: pr.updated_at,
+        url: pr.html_url,
+        commentsCount: pr.comments,
+        reviewsCount: pr.requested_reviewers?.length || 0
+      }))
     }
-  })
+  } catch (error) {
+    console.error('Proposals fetch error:', error)
+    throw createError({
+      statusCode: 500,
+      message: 'Failed to fetch proposals'
+    })
+  }
+})

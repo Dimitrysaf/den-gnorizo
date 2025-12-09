@@ -2,44 +2,59 @@ import { Octokit } from '@octokit/rest'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
-  const proposalId = event.context.params.id
+  const prNumber = parseInt(event.context.params.id)
   
-  // TODO: Get from database
-  // const db = useDatabase()
-  // const proposal = await db.query('SELECT * FROM proposals WHERE id = $1', [proposalId])
-  
-  // For now, return mock data
-  const proposal = {
-    id: proposalId,
-    branch_name: `proposal/${proposalId}-example`,
-    title: 'Example Proposal',
-    description: 'This is an example proposal',
-    status: 'open',
-    created_at: '2024-12-09T10:00:00Z'
-  }
-  
-  // Fetch branch info from GitHub
-  const octokit = new Octokit({
-    auth: config.githubToken
-  })
+  const octokit = new Octokit({ auth: config.githubToken })
   
   try {
-    const { data: branch } = await octokit.repos.getBranch({
+    // Get PR details
+    const { data: pr } = await octokit.pulls.get({
       owner: config.githubOwner,
       repo: config.githubContentRepo,
-      branch: proposal.branch_name
+      pull_number: prNumber
     })
     
-    proposal.lastCommit = {
-      sha: branch.commit.sha,
-      message: branch.commit.commit.message,
-      author: branch.commit.commit.author.name,
-      date: branch.commit.commit.author.date
-    }
+    // Get reviews (votes)
+    const { data: reviews } = await octokit.pulls.listReviews({
+      owner: config.githubOwner,
+      repo: config.githubContentRepo,
+      pull_number: prNumber
+    })
+    
+    // Count approvals and rejections
+    const approvals = reviews.filter(r => r.state === 'APPROVED').length
+    const rejections = reviews.filter(r => r.state === 'CHANGES_REQUESTED').length
     
     return {
       success: true,
-      proposal
+      proposal: {
+        id: pr.number,
+        title: pr.title,
+        description: pr.body,
+        branch: pr.head.ref,
+        status: pr.state,
+        merged: pr.merged_at !== null,
+        mergeable: pr.mergeable,
+        author: {
+          username: pr.user.login,
+          avatar: pr.user.avatar_url,
+          url: pr.user.html_url
+        },
+        createdAt: pr.created_at,
+        updatedAt: pr.updated_at,
+        mergedAt: pr.merged_at,
+        url: pr.html_url,
+        commentsCount: pr.comments,
+        commits: pr.commits,
+        additions: pr.additions,
+        deletions: pr.deletions,
+        changedFiles: pr.changed_files,
+        votes: {
+          approvals,
+          rejections,
+          total: reviews.length
+        }
+      }
     }
   } catch (error) {
     console.error('Proposal fetch error:', error)
