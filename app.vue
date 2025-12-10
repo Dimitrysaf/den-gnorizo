@@ -32,112 +32,76 @@ const fetchRepoId = async () => {
   const response = await fetch('/api/github/repo-id');
   repoId.value = await response.json();
 };
+
+import ResponsiveTabs from '@/components/ResponsiveTabs.vue';
+import { watch } from 'vue';
+
+const activeTab = ref('');
+
+const tabs = [
+  { id: 'repo-id', label: 'Repository ID', icon: 'fingerprint' },
+  { id: 'issues', label: 'Issues', icon: 'bug_report' },
+  { id: 'prs', label: 'Pull Requests', icon: 'call_merge' },
+  { id: 'discussions', label: 'Discussions', icon: 'forum' },
+  { id: 'branches', label: 'Branches', icon: 'call_split' },
+];
+
+// Fetch data when tab changes if not already fetched
+watch(activeTab, (newTab) => {
+  if (newTab === 'repo-id' && !repoId.value) fetchRepoId();
+  if (newTab === 'issues' && !issues.value) fetchIssues();
+  if (newTab === 'prs' && !prs.value) fetchPRs();
+  if (newTab === 'discussions' && !discussions.value) fetchDiscussions();
+  if (newTab === 'branches' && !branches.value) fetchBranches();
+});
 </script>
 
 <template>
-  <div class="container">
-    <h1>GitHub API Dashboard</h1>
-    <div class="buttons">
-      <button @click="fetchRepoId">Fetch Repo ID</button> <!-- New Button -->
-      <button @click="fetchIssues">Fetch Issues</button>
-      <button @click="fetchPRs">Fetch PRs</button>
-      <button @click="fetchDiscussions">Fetch Discussions</button>
-      <button @click="fetchBranches">Fetch Branches</button>
+  <div class="container mx-auto p-10 max-w-4xl font-serif">
+    <h1 class="text-3xl font-serif text-center mb-10 text-foreground">GitHub API Dashboard</h1>
+    
+    <div class="mb-6">
+      <ResponsiveTabs
+        v-model="activeTab"
+        :items="tabs"
+      />
     </div>
-    <div class="results">
-      <!-- New Result Card -->
-      <div v-if="repoId" class="result-card">
-        <h2>Repository ID</h2>
-        <pre>{{ repoId }}</pre>
-        <p>Please copy this ID and add it to your <code>.env</code> file as <code>GITHUB_REPO_ID</code>.</p>
+
+    <!-- Content Area -->
+    <div class="mt-6">
+      <div v-if="activeTab === 'repo-id' && repoId" class="bg-card text-card-foreground border border-border p-6 shadow-none">
+        <h2 class="text-xl font-serif mb-4">Repository ID</h2>
+        <pre class="bg-muted p-4 border border-border text-sm overflow-x-auto">{{ repoId }}</pre>
+        <p class="mt-4 text-muted-foreground italic text-sm">Please copy this ID and add it to your <code>.env</code> file as <code>GITHUB_REPO_ID</code>.</p>
       </div>
-      <div v-if="issues" class="result-card">
-        <h2>Issues</h2>
-        <pre>{{ issues }}</pre>
+
+      <div v-else-if="activeTab === 'issues' && issues" class="bg-card text-card-foreground border border-border p-6 shadow-none">
+        <h2 class="text-xl font-serif mb-4">Issues</h2>
+        <pre class="bg-muted p-4 border border-border text-sm overflow-x-auto">{{ issues }}</pre>
       </div>
-      <div v-if="prs" class="result-card">
-        <h2>Pull Requests</h2>
-        <pre>{{ prs }}</pre>
+
+      <div v-else-if="activeTab === 'prs' && prs" class="bg-card text-card-foreground border border-border p-6 shadow-none">
+        <h2 class="text-xl font-serif mb-4">Pull Requests</h2>
+        <pre class="bg-muted p-4 border border-border text-sm overflow-x-auto">{{ prs }}</pre>
       </div>
-      <div v-if="discussions" class="result-card">
-        <h2>Discussions</h2>
-        <pre>{{ discussions }}</pre>
+
+      <div v-else-if="activeTab === 'discussions' && discussions" class="bg-card text-card-foreground border border-border p-6 shadow-none">
+        <h2 class="text-xl font-serif mb-4">Discussions</h2>
+        <pre class="bg-muted p-4 border border-border text-sm overflow-x-auto">{{ discussions }}</pre>
       </div>
-      <div v-if="branches" class="result-card">
-        <h2>Branches</h2>
-        <pre>{{ branches }}</pre>
+
+      <div v-else-if="activeTab === 'branches' && branches" class="bg-card text-card-foreground border border-border p-6 shadow-none">
+        <h2 class="text-xl font-serif mb-4">Branches</h2>
+        <pre class="bg-muted p-4 border border-border text-sm overflow-x-auto">{{ branches }}</pre>
+      </div>
+
+      <div v-else class="text-center p-10 text-muted-foreground border border-border border-dashed">
+        Select a tab to view content.
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 40px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #f7fafc;
-}
-
-h1 {
-  text-align: center;
-  color: #2d3748;
-  margin-bottom: 40px;
-}
-
-.buttons {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
-  gap: 20px;
-  margin-bottom: 40px;
-}
-
-button {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  background-color: #4299e1;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-button:hover {
-  background-color: #3182ce;
-}
-
-.results {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 20px;
-}
-
-.result-card {
-  background-color: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-h2 {
-  color: #2d3748;
-  margin-top: 0;
-}
-
-pre {
-  background-color: #edf2f7;
-  padding: 15px;
-  border-radius: 4px;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
-p {
-  margin-top: 1rem;
-  font-style: italic;
-  color: #6a7f99;
-}
+/* Scoped styles removed in favor of Tailwind CSS */
 </style>
