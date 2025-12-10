@@ -103,12 +103,18 @@ const selectTab = (id: string) => {
         :class="[
             'rounded-t-sm rounded-b-none h-10 px-4 py-2 font-serif text-sm font-medium transition-all border border-transparent whitespace-nowrap',
             modelValue === item.id 
-              ? 'bg-background text-foreground border-border border-b-background shadow-sm' 
+              ? 'bg-background text-foreground border-border border-b-background shadow-sm relative z-10 top-[1px]' 
               : 'text-muted-foreground hover:bg-muted hover:text-foreground mb-[1px]'
         ]"
         @click="selectTab(item.id)"
         >
-        <span v-if="item.icon" class="material-symbols-sharp mr-2 text-[18px]">{{ item.icon }}</span>
+        <span 
+          v-if="item.icon" 
+          class="material-symbols-sharp mr-2 text-[18px]"
+          :class="modelValue === item.id ? 'material-fill-1' : 'material-fill-0'"
+        >
+          {{ item.icon }}
+        </span>
         {{ item.label }}
         </Button>
     </div>

@@ -36,14 +36,14 @@ const fetchRepoId = async () => {
 import ResponsiveTabs from '@/components/ResponsiveTabs.vue';
 import { watch } from 'vue';
 
-const activeTab = ref('');
+const activeTab = ref('home');
 
 const tabs = [
-  { id: 'repo-id', label: 'Repository ID', icon: 'fingerprint' },
-  { id: 'issues', label: 'Issues', icon: 'bug_report' },
-  { id: 'prs', label: 'Pull Requests', icon: 'call_merge' },
-  { id: 'discussions', label: 'Discussions', icon: 'forum' },
-  { id: 'branches', label: 'Branches', icon: 'call_split' },
+  { id: 'home', label: 'Αρχική', icon: 'home' },
+  { id: 'discussions', label: 'Συζήτηση', icon: 'forum' },
+  { id: 'issues', label: 'Προβλήματα', icon: 'bug_report' },
+  { id: 'proposals', label: 'Προτάσεις', icon: 'lightbulb' },
+  { id: 'about', label: 'Σχετικά', icon: 'info' },
 ];
 
 // Fetch data when tab changes if not already fetched
@@ -57,10 +57,12 @@ watch(activeTab, (newTab) => {
 </script>
 
 <template>
-  <div class="container mx-auto p-10 max-w-4xl font-serif">
-    <h1 class="text-3xl font-serif text-center mb-10 text-foreground">GitHub API Dashboard</h1>
+  <div class="w-full font-serif">
+    <div class="p-6 bg-background border-b border-border">
+        <h1 class="text-3xl font-serif font-bold text-foreground">A' Συντακτική Βουλή των Πολιτών</h1>
+    </div>
     
-    <div class="mb-6">
+    <div class="w-full">
       <ResponsiveTabs
         v-model="activeTab"
         :items="tabs"
@@ -68,36 +70,8 @@ watch(activeTab, (newTab) => {
     </div>
 
     <!-- Content Area -->
-    <div class="mt-6">
-      <div v-if="activeTab === 'repo-id' && repoId" class="bg-card text-card-foreground border border-border p-6 shadow-none">
-        <h2 class="text-xl font-serif mb-4">Repository ID</h2>
-        <pre class="bg-muted p-4 border border-border text-sm overflow-x-auto">{{ repoId }}</pre>
-        <p class="mt-4 text-muted-foreground italic text-sm">Please copy this ID and add it to your <code>.env</code> file as <code>GITHUB_REPO_ID</code>.</p>
-      </div>
-
-      <div v-else-if="activeTab === 'issues' && issues" class="bg-card text-card-foreground border border-border p-6 shadow-none">
-        <h2 class="text-xl font-serif mb-4">Issues</h2>
-        <pre class="bg-muted p-4 border border-border text-sm overflow-x-auto">{{ issues }}</pre>
-      </div>
-
-      <div v-else-if="activeTab === 'prs' && prs" class="bg-card text-card-foreground border border-border p-6 shadow-none">
-        <h2 class="text-xl font-serif mb-4">Pull Requests</h2>
-        <pre class="bg-muted p-4 border border-border text-sm overflow-x-auto">{{ prs }}</pre>
-      </div>
-
-      <div v-else-if="activeTab === 'discussions' && discussions" class="bg-card text-card-foreground border border-border p-6 shadow-none">
-        <h2 class="text-xl font-serif mb-4">Discussions</h2>
-        <pre class="bg-muted p-4 border border-border text-sm overflow-x-auto">{{ discussions }}</pre>
-      </div>
-
-      <div v-else-if="activeTab === 'branches' && branches" class="bg-card text-card-foreground border border-border p-6 shadow-none">
-        <h2 class="text-xl font-serif mb-4">Branches</h2>
-        <pre class="bg-muted p-4 border border-border text-sm overflow-x-auto">{{ branches }}</pre>
-      </div>
-
-      <div v-else class="text-center p-10 text-muted-foreground border border-border border-dashed">
-        Select a tab to view content.
-      </div>
+    <div class="p-6 min-h-[200px]">
+       <!-- Content cleared as requested -->
     </div>
   </div>
 </template>
