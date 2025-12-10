@@ -141,7 +141,7 @@ const selectTab = (id: string) => {
 
     <!-- HIDDEN MEASUREMENT CONTAINER -->
     <!-- Mimics the styles of the visible items exactly but rendered off-screen -->
-    <div ref="measureRef" class="absolute top-0 left-0 opacity-0 pointer-events-none flex items-end invisible">
+    <div ref="measureRef" class="absolute top-0 left-0 w-0 h-0 overflow-hidden opacity-0 pointer-events-none flex items-end invisible">
        <div 
         v-for="item in items" 
         :key="item.id"
