@@ -1,14 +1,19 @@
 <script setup lang="ts">
 // index.vue - Home page
 import BranchMenu from '@/components/BranchMenu.vue';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import ReadingContainer from '@/components/ReadingContainer.vue';
+
+import Skeleton from '@/components/ui/skeleton/Skeleton.vue';
 
 const latestCommit = ref<any>(null);
 const selectedBranch = ref<string>('main');
+const loading = ref(true);
 
 const handleBranchSelect = async (branchName: string) => {
   selectedBranch.value = branchName;
+  loading.value = true;
+  latestCommit.value = null; // Reset to trigger skeleton
   try {
     const response = await fetch(`/api/github/commits?sha=${branchName}`);
     if (response.ok) {
@@ -19,8 +24,15 @@ const handleBranchSelect = async (branchName: string) => {
     }
   } catch (error) {
     console.error('Failed to fetch commits:', error);
+  } finally {
+    loading.value = false;
   }
 };
+
+// Initial fetch
+onMounted(() => {
+  handleBranchSelect('main');
+});
 
 const formatGreekRelativeTime = (dateString: string) => {
   const date = new Date(dateString);
@@ -59,8 +71,16 @@ const formatGreekRelativeTime = (dateString: string) => {
   <div class="space-y-4">
       <BranchMenu @select="handleBranchSelect" />
       
+      <!-- Commit Info Bar Skeleton -->
+      <div v-if="loading" class="flex items-center w-full gap-2 h-9 p-2 -ml-2">
+         <Skeleton class="h-5 w-32" /> <!-- User -->
+         <Skeleton class="h-5 flex-1" /> <!-- Message -->
+         <Skeleton class="h-5 w-20" /> <!-- SHA -->
+         <Skeleton class="h-5 w-24" /> <!-- Date -->
+      </div>
+
       <!-- Commit Info Bar -->
-      <NuxtLink v-if="latestCommit" :to="`/commits?branch=${selectedBranch}`" class="flex items-center w-full gap-2 text-sm text-muted-foreground hover:bg-muted/50 p-2 -ml-2 rounded-md transition-colors block">
+      <NuxtLink v-else-if="latestCommit" :to="`/commits?branch=${selectedBranch}`" class="flex items-center w-full gap-2 text-sm text-muted-foreground hover:bg-muted/50 p-2 -ml-2 rounded-md transition-colors block">
          <!-- User Name -->
         <span class="flex items-center gap-1 font-medium text-foreground">
           <span class="material-symbols-sharp text-[16px]">person</span>

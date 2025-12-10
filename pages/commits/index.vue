@@ -8,6 +8,12 @@ const branch = ref(route.query.branch || 'main');
 const commits = ref<any[]>([]);
 const loading = ref(false);
 
+
+const breadcrumbItems = [
+  { label: 'Αρχική', to: '/' },
+  { label: 'Ιστορικό Αλλαγών' }
+];
+
 const fetchCommits = async () => {
   loading.value = true;
   try {
@@ -51,6 +57,7 @@ const formatGreekRelativeTime = (dateString: string) => {
 <template>
   <ReadingContainer>
     <div class="space-y-6">
+      <AppBreadcrumb :items="breadcrumbItems" />
       <div class="flex items-center justify-between">
         <h2 class="text-2xl font-serif font-semibold">Ιστορικό Αλλαγών</h2>
         <span class="text-muted-foreground text-sm font-mono bg-muted px-2 py-1 rounded">
@@ -58,8 +65,19 @@ const formatGreekRelativeTime = (dateString: string) => {
         </span>
       </div>
 
-      <div v-if="loading" class="text-center py-8 text-muted-foreground">
-        Φόρτωση...
+      <div v-if="loading" class="space-y-4">
+        <div v-for="i in 5" :key="i" class="block p-4 rounded-lg border bg-card">
+            <div class="flex items-start justify-between gap-4">
+                <div class="space-y-2 flex-1">
+                    <Skeleton class="h-5 w-3/4" />
+                    <div class="flex items-center gap-2">
+                        <Skeleton class="h-4 w-32" />
+                        <Skeleton class="h-4 w-24" />
+                    </div>
+                </div>
+                <Skeleton class="h-5 w-16" />
+            </div>
+        </div>
       </div>
 
       <div v-else class="space-y-4">

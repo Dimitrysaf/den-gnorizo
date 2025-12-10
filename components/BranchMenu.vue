@@ -17,12 +17,16 @@ interface Branch {
   protected: boolean;
 }
 
+import Skeleton from '@/components/ui/skeleton/Skeleton.vue';
+
 const branches = ref<Branch[]>([]);
 const selectedBranch = ref<string | null>(null);
+const loading = ref(true);
 
 const emit = defineEmits(['select']);
 
 const fetchBranches = async () => {
+    loading.value = true;
     try {
         const response = await fetch('/api/github/branches');
         if (response.ok) {
@@ -37,6 +41,8 @@ const fetchBranches = async () => {
         }
     } catch (error) {
         console.error('Failed to fetch branches:', error);
+    } finally {
+        loading.value = false;
     }
 }
 
@@ -52,11 +58,16 @@ const selectBranch = (branchName: string) => {
 
 <template>
   <DropdownMenu>
-    <DropdownMenuTrigger as-child>
-      <Button variant="outline" class="font-serif">
-        <span class="material-symbols-sharp mr-2 text-[18px]">account_tree</span>
-        {{ selectedBranch || 'Branch' }}
-        <span class="material-symbols-sharp ml-2 text-[18px]">expand_more</span>
+    <DropdownMenuTrigger as-child :disabled="loading">
+      <Button variant="outline" class="font-serif min-w-[140px]">
+        <template v-if="loading">
+            <Skeleton class="h-5 w-24" />
+        </template>
+        <template v-else>
+            <span class="material-symbols-sharp mr-2 text-[18px]">account_tree</span>
+            {{ selectedBranch || 'Branch' }}
+            <span class="material-symbols-sharp ml-2 text-[18px]">expand_more</span>
+        </template>
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end" class="max-h-[300px] overflow-y-auto">

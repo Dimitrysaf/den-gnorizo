@@ -1,12 +1,18 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import ReadingContainer from '@/components/ReadingContainer.vue';
+import AppBreadcrumb from '@/components/AppBreadcrumb.vue';
 
 const route = useRoute();
 const sha = route.params.sha as string;
 const commit = ref<any>(null);
 const loading = ref(true);
+
+const breadcrumbItems = [
+  { label: 'Αρχική', to: '/' },
+  { label: 'Ιστορικό Αλλαγών', to: `/commits?branch=main` }, // Ideal would be to preserve the previous branch
+  { label: sha.substring(0, 7) }
+];
 
 const fetchCommit = async () => {
   loading.value = true;
@@ -53,9 +59,35 @@ const formatGreekRelativeTime = (dateString: string) => {
 <template>
   <ReadingContainer>
     <div class="space-y-6">
-      <!-- Header -->
-      <div v-if="loading" class="text-center py-8 text-muted-foreground">
-        Φόρτωση λεπτομερειών...
+      <AppBreadcrumb :items="breadcrumbItems" />
+      
+      <!-- Header Skeleton -->
+      <div v-if="loading" class="space-y-8">
+        <div class="space-y-4 border-b pb-6">
+            <Skeleton class="h-8 w-3/4" /> <!-- Title -->
+            <div class="flex items-center gap-4">
+                <Skeleton class="h-5 w-32" />
+                <Skeleton class="h-5 w-24" />
+                <Skeleton class="h-5 w-20" />
+            </div>
+            <Skeleton class="h-20 w-full" /> <!-- Message body -->
+        </div>
+        <div class="space-y-6">
+            <div class="flex items-center justify-between">
+                <Skeleton class="h-7 w-40" />
+                <Skeleton class="h-5 w-24" />
+            </div>
+             <div v-for="i in 3" :key="i" class="border rounded-lg overflow-hidden bg-card">
+                <div class="bg-muted/40 px-4 py-2 border-b flex items-center justify-between">
+                    <Skeleton class="h-5 w-1/3" />
+                    <Skeleton class="h-4 w-16" />
+                </div>
+                <div class="p-4">
+                    <Skeleton class="h-4 w-full mb-2" />
+                    <Skeleton class="h-4 w-2/3" />
+                </div>
+            </div>
+        </div>
       </div>
 
       <div v-else-if="commit" class="space-y-8">
