@@ -25,6 +25,6 @@ const forwardedProps = useForwardProps(delegatedProps)
     )"
   >
     <slot />
-    <span class="material-symbols-outlined ml-auto text-[16px]">chevron_right</span>
+    <span class="material-symbols-sharp ml-auto text-[16px]">chevron_right</span>
   </DropdownMenuSubTrigger>
 </template>

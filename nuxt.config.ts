@@ -23,7 +23,7 @@ export default defineNuxtConfig({
     families: {
       'Playfair Display': [400, 700],
       'Merriweather': [300, 400, 700],
-      'Material Symbols Outlined': true,
+      'Material Symbols Sharp': true,
     }
   },
   shadcn: {

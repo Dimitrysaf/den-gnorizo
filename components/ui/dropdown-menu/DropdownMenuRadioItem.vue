@@ -29,7 +29,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
   >
     <span class="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <DropdownMenuItemIndicator>
-        <span class="material-symbols-outlined text-[10px]">fiber_manual_record</span>
+        <span class="material-symbols-sharp text-[10px]">fiber_manual_record</span>
       </DropdownMenuItemIndicator>
     </span>
     <slot />
