@@ -7,11 +7,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { NuxtLink } from '#components';
 
 interface TabItem {
   id: string;
   label: string;
   icon?: string;
+  to?: string; // Optional URL for navigation
 }
 
 const props = defineProps<{
@@ -85,8 +87,11 @@ watch(() => props.items, async () => {
     calculateLayout();
 }, { deep: true });
 
-const selectTab = (id: string) => {
+const selectTab = (id: string, to?: string) => {
   emit('update:modelValue', id);
+  // Optional: navigation is handled by NuxtLink if 'to' is present, 
+  // but we can also manually navigate if needed. 
+  // For now, relies on NuxtLink or click actions.
 };
 </script>
 
@@ -100,13 +105,15 @@ const selectTab = (id: string) => {
         v-for="item in visibleItems"
         :key="item.id"
         variant="ghost"
+        :as="item.to ? NuxtLink : 'button'"
+        :to="item.to"
         :class="[
             'group rounded-t-sm rounded-b-none h-10 px-4 py-2 font-serif text-sm font-medium transition-all border border-transparent whitespace-nowrap',
             modelValue === item.id 
               ? 'bg-background text-foreground border-border border-b-background shadow-sm relative z-10 top-[1px] hover:bg-background focus:bg-background active:bg-background' 
               : 'text-muted-foreground [@media(hover:hover)]:hover:text-foreground mb-[1px] hover:bg-transparent focus:bg-transparent active:bg-transparent'
         ]"
-        @click="selectTab(item.id)"
+        @click="selectTab(item.id, item.to)"
         >
         <span 
           v-if="item.icon" 
@@ -131,7 +138,9 @@ const selectTab = (id: string) => {
           v-for="item in overflowItems"
           :key="item.id"
           class="font-serif cursor-pointer"
-          @click="selectTab(item.id)"
+          :as="item.to ? NuxtLink : 'div'"
+          :to="item.to"
+          @click="selectTab(item.id, item.to)"
         >
           <span 
             v-if="item.icon" 
@@ -160,3 +169,4 @@ const selectTab = (id: string) => {
 
   </div>
 </template>
+

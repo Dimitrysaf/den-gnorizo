@@ -1,60 +1,30 @@
 <script setup>
-import { ref } from 'vue';
-
-const issues = ref(null);
-const prs = ref(null);
-const discussions = ref(null);
-const branches = ref(null);
-const repoId = ref(null); // New ref for the repo ID
-
-const fetchIssues = async () => {
-  const response = await fetch('/api/github/issues');
-  issues.value = await response.json();
-};
-
-const fetchPRs = async () => {
-  const response = await fetch('/api/github/prs');
-  prs.value = await response.json();
-};
-
-const fetchDiscussions = async () => {
-  const response = await fetch('/api/github/discussions');
-  discussions.value = await response.json();
-};
-
-const fetchBranches = async () => {
-  const response = await fetch('/api/github/branches');
-  branches.value = await response.json();
-};
-
-// New function to fetch the repo ID
-const fetchRepoId = async () => {
-  const response = await fetch('/api/github/repo-id');
-  repoId.value = await response.json();
-};
-
+import { ref, watch, computed } from 'vue';
+import { useRoute } from 'vue-router';
 import ResponsiveTabs from '@/components/ResponsiveTabs.vue';
 import ReadingContainer from '@/components/ReadingContainer.vue';
-import { watch } from 'vue';
 
-const activeTab = ref('home');
+const route = useRoute();
 
 const tabs = [
-  { id: 'home', label: 'Αρχική', icon: 'home' },
-  { id: 'discussions', label: 'Συζήτηση', icon: 'forum' },
-  { id: 'issues', label: 'Προβλήματα', icon: 'bug_report' },
-  { id: 'proposals', label: 'Προτάσεις', icon: 'lightbulb' },
-  { id: 'about', label: 'Σχετικά', icon: 'info' },
+  { id: 'index', label: 'Αρχική', icon: 'home', to: '/' },
+  { id: 'discuss', label: 'Συζήτηση', icon: 'forum', to: '/discuss' },
+  { id: 'issues', label: 'Προβλήματα', icon: 'bug_report', to: '/issues' },
+  { id: 'ideas', label: 'Προτάσεις', icon: 'lightbulb', to: '/ideas' },
+  { id: 'about', label: 'Σχετικά', icon: 'info', to: '/about' },
 ];
 
-// Fetch data when tab changes if not already fetched
-watch(activeTab, (newTab) => {
-  if (newTab === 'repo-id' && !repoId.value) fetchRepoId();
-  if (newTab === 'issues' && !issues.value) fetchIssues();
-  if (newTab === 'prs' && !prs.value) fetchPRs();
-  if (newTab === 'discussions' && !discussions.value) fetchDiscussions();
-  if (newTab === 'branches' && !branches.value) fetchBranches();
+const activeTab = computed({
+  get: () => {
+    // Find matching tab based on current route path
+    const match = tabs.find(t => t.to === route.path);
+    return match ? match.id : 'index';
+  },
+  set: (val) => {
+    // Setting activeTab is handled by navigation via NuxtLink in ResponsiveTabs
+  }
 });
+
 </script>
 
 <template>
@@ -66,7 +36,7 @@ watch(activeTab, (newTab) => {
         
         <div class="w-full">
         <ResponsiveTabs
-            v-model="activeTab"
+            :model-value="activeTab"
             :items="tabs"
         />
         </div>
@@ -75,7 +45,7 @@ watch(activeTab, (newTab) => {
     <!-- Content Area -->
     <div class="p-6 min-h-[200px]">
       <ReadingContainer>
-       <!-- Content cleared as requested -->
+       <NuxtPage />
       </ReadingContainer>
     </div>
   </div>
