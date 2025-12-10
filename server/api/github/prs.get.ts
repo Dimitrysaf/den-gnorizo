@@ -3,7 +3,7 @@ export default defineEventHandler(async (event) => {
   const { githubToken, githubOwner, githubRepo } = useRuntimeConfig();
 
   const response = await fetch(
-    `https://api.github.com/repos/${githubOwner}/${githubRepo}/pulls`,
+    `https://api.github.com/repos/${githubOwner}/${githubRepo}/pulls?state=all`,
     {
       headers: {
         Authorization: `Bearer ${githubToken}`,

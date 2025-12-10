@@ -2,10 +2,32 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
+
   runtimeConfig: {
     githubToken: process.env.GITHUB_TOKEN,
     githubOwner: process.env.GITHUB_OWNER,
-    githubRepo: process.env.GITHUB_CONTENT_REPO, // Corrected to match your .env file
+    githubRepo: process.env.GITHUB_CONTENT_REPO,
     githubRepoId: process.env.GITHUB_REPO_ID,
+    public: {
+      apiBase: '/api'
+    }
+  },
+
+  modules: [
+    '@nuxtjs/tailwindcss',
+    'shadcn-nuxt',
+    '@nuxtjs/google-fonts'
+  ],
+  googleFonts: {
+    families: {
+      'Playfair Display': [400, 700],
+      'Merriweather': [300, 400, 700],
+      'Material Symbols Outlined': true,
+    }
+  },
+  shadcn: {
+    prefix: '',
+    componentDir: './components/ui'
   },
 })
+  ```
