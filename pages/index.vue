@@ -5,8 +5,10 @@ import { ref } from 'vue';
 import ReadingContainer from '@/components/ReadingContainer.vue';
 
 const latestCommit = ref<any>(null);
+const selectedBranch = ref<string>('main');
 
 const handleBranchSelect = async (branchName: string) => {
+  selectedBranch.value = branchName;
   try {
     const response = await fetch(`/api/github/commits?sha=${branchName}`);
     if (response.ok) {
@@ -58,7 +60,7 @@ const formatGreekRelativeTime = (dateString: string) => {
       <BranchMenu @select="handleBranchSelect" />
       
       <!-- Commit Info Bar -->
-      <div v-if="latestCommit" class="flex items-center w-full gap-2 text-sm text-muted-foreground">
+      <NuxtLink v-if="latestCommit" :to="`/commits?branch=${selectedBranch}`" class="flex items-center w-full gap-2 text-sm text-muted-foreground hover:bg-muted/50 p-2 -ml-2 rounded-md transition-colors block">
          <!-- User Name -->
         <span class="flex items-center gap-1 font-medium text-foreground">
           <span class="material-symbols-sharp text-[16px]">person</span>
@@ -80,7 +82,7 @@ const formatGreekRelativeTime = (dateString: string) => {
          <span class="text-base font-medium text-foreground">
           {{ formatGreekRelativeTime(latestCommit.commit.author.date) }}
         </span>
-      </div>
+      </NuxtLink>
     <p class="text-muted-foreground">
       Εδώ είναι η αρχική σελίδα της Α' Συντακτικής Βουλής των Πολιτών.
     </p>

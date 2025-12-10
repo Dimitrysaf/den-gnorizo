@@ -1,0 +1,94 @@
+<script setup lang="ts">
+import { ref, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import ReadingContainer from '@/components/ReadingContainer.vue';
+
+const route = useRoute();
+const branch = ref(route.query.branch || 'main');
+const commits = ref<any[]>([]);
+const loading = ref(false);
+
+const fetchCommits = async () => {
+  loading.value = true;
+  try {
+    const response = await fetch(`/api/github/commits?sha=${branch.value}&limit=30`);
+    if (response.ok) {
+      commits.value = await response.json();
+    }
+  } catch (error) {
+    console.error('Failed to fetch commits:', error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchCommits();
+});
+
+const formatGreekRelativeTime = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) return 'Τώρα';
+
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return `${diffInMinutes}λ πριν`;
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours}ω πριν`;
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays === 1) return 'Χθες';
+  
+  if (diffInDays < 7) return `${diffInDays}ημ πριν`;
+
+  return date.toLocaleDateString('el-GR');
+};
+</script>
+
+<template>
+  <ReadingContainer>
+    <div class="space-y-6">
+      <div class="flex items-center justify-between">
+        <h2 class="text-2xl font-serif font-semibold">Ιστορικό Αλλαγών</h2>
+        <span class="text-muted-foreground text-sm font-mono bg-muted px-2 py-1 rounded">
+            {{ branch }}
+        </span>
+      </div>
+
+      <div v-if="loading" class="text-center py-8 text-muted-foreground">
+        Φόρτωση...
+      </div>
+
+      <div v-else class="space-y-4">
+        <NuxtLink 
+            v-for="commit in commits" 
+            :key="commit.sha" 
+            :to="`/commits/${commit.sha}`"
+            class="block p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+        >
+            <div class="flex items-start justify-between gap-4">
+                <div class="space-y-1">
+                    <div class="font-medium text-foreground">
+                        {{ commit.commit.message.split('\n')[0] }}
+                    </div>
+                    <div class="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span class="flex items-center gap-1">
+                            <span class="material-symbols-sharp text-[16px]">person</span>
+                            {{ commit.commit.author.name }}
+                        </span>
+                        <span>•</span>
+                        <span>{{ formatGreekRelativeTime(commit.commit.author.date) }}</span>
+                    </div>
+                </div>
+                <div class="font-mono text-xs bg-muted px-2 py-1 rounded text-foreground">
+                    {{ commit.sha.substring(0, 7) }}
+                </div>
+            </div>
+        </NuxtLink>
+      </div>
+    </div>
+  </ReadingContainer>
+</template>
