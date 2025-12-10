@@ -34,6 +34,7 @@ const fetchRepoId = async () => {
 };
 
 import ResponsiveTabs from '@/components/ResponsiveTabs.vue';
+import ReadingContainer from '@/components/ReadingContainer.vue';
 import { watch } from 'vue';
 
 const activeTab = ref('home');
@@ -58,20 +59,24 @@ watch(activeTab, (newTab) => {
 
 <template>
   <div class="w-full font-serif">
-    <div class="p-6 bg-background border-b border-border">
-        <h1 class="text-3xl font-serif font-bold text-foreground">A' Συντακτική Βουλή των Πολιτών</h1>
-    </div>
-    
-    <div class="w-full">
-      <ResponsiveTabs
-        v-model="activeTab"
-        :items="tabs"
-      />
+    <div class="w-full bg-muted/20 shadow-[inset_0_-20px_30px_-20px_rgba(0,0,0,0.1)]">
+        <div class="pt-6 px-6 pb-2">
+            <h1 class="text-3xl font-serif font-bold text-foreground">A' Συντακτική Βουλή των Πολιτών</h1>
+        </div>
+        
+        <div class="w-full">
+        <ResponsiveTabs
+            v-model="activeTab"
+            :items="tabs"
+        />
+        </div>
     </div>
 
     <!-- Content Area -->
     <div class="p-6 min-h-[200px]">
+      <ReadingContainer>
        <!-- Content cleared as requested -->
+      </ReadingContainer>
     </div>
   </div>
 </template>

@@ -92,7 +92,7 @@ const selectTab = (id: string) => {
 
 <template>
   <!-- Main Container -->
-  <div ref="containerRef" class="w-full flex items-end border-b border-border bg-muted/20 pt-2 px-2 gap-1 relative">
+  <div ref="containerRef" class="w-full flex items-end pt-2 px-2 gap-1 relative">
     
     <!-- Visible Items -->
     <div class="flex flex-1 items-end overflow-hidden h-10">
@@ -101,10 +101,10 @@ const selectTab = (id: string) => {
         :key="item.id"
         variant="ghost"
         :class="[
-            'rounded-t-sm rounded-b-none h-10 px-4 py-2 font-serif text-sm font-medium transition-all border border-transparent whitespace-nowrap',
+            'group rounded-t-sm rounded-b-none h-10 px-4 py-2 font-serif text-sm font-medium transition-all border border-transparent whitespace-nowrap',
             modelValue === item.id 
-              ? 'bg-background text-foreground border-border border-b-background shadow-sm relative z-10 top-[1px]' 
-              : 'text-muted-foreground hover:bg-muted hover:text-foreground mb-[1px]'
+              ? 'bg-background text-foreground border-border border-b-background shadow-sm relative z-10 top-[1px] hover:bg-background focus:bg-background active:bg-background' 
+              : 'text-muted-foreground [@media(hover:hover)]:hover:text-foreground mb-[1px] hover:bg-transparent focus:bg-transparent active:bg-transparent'
         ]"
         @click="selectTab(item.id)"
         >
@@ -115,7 +115,7 @@ const selectTab = (id: string) => {
         >
           {{ item.icon }}
         </span>
-        {{ item.label }}
+        <span :class="{ '[@media(hover:hover)]:group-hover:underline': modelValue !== item.id }">{{ item.label }}</span>
         </Button>
     </div>
 
@@ -133,7 +133,13 @@ const selectTab = (id: string) => {
           class="font-serif cursor-pointer"
           @click="selectTab(item.id)"
         >
-          <span v-if="item.icon" class="material-symbols-sharp mr-2 text-[18px]">{{ item.icon }}</span>
+          <span 
+            v-if="item.icon" 
+            class="material-symbols-sharp mr-2 text-[18px]"
+            :class="modelValue === item.id ? 'material-fill-1' : 'material-fill-0'"
+          >
+            {{ item.icon }}
+          </span>
           {{ item.label }}
         </DropdownMenuItem>
       </DropdownMenuContent>
