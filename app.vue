@@ -2,7 +2,6 @@
 import { ref, watch, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import ResponsiveTabs from '@/components/ResponsiveTabs.vue';
-import ReadingContainer from '@/components/ReadingContainer.vue';
 
 const route = useRoute();
 
@@ -44,9 +43,7 @@ const activeTab = computed({
 
     <!-- Content Area -->
     <div class="p-6 min-h-[200px]">
-      <ReadingContainer>
        <NuxtPage />
-      </ReadingContainer>
     </div>
   </div>
 </template>

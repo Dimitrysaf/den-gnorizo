@@ -1,12 +1,17 @@
 
 export default defineEventHandler(async (event) => {
     const { githubToken, githubOwner, githubRepo } = useRuntimeConfig();
-    const query = getQuery(event);
-    const sha = query.sha || 'main'; // Default to main if not provided
-    const limit = query.limit || 30; // Default to 30 commits
+    const ref = event.context.params?.ref;
+
+    if (!ref) {
+        throw createError({
+            statusCode: 400,
+            statusMessage: 'Commit Ref (SHA) is required',
+        });
+    }
 
     const response = await fetch(
-        `https://api.github.com/repos/${githubOwner}/${githubRepo}/commits?sha=${sha}&per_page=${limit}`,
+        `https://api.github.com/repos/${githubOwner}/${githubRepo}/commits/${ref}`,
         {
             headers: {
                 Authorization: `Bearer ${githubToken}`,
