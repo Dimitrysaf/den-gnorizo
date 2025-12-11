@@ -25,6 +25,7 @@ const emit = defineEmits(['update:modelValue']);
 
 const containerRef = ref<HTMLElement | null>(null);
 const measureRef = ref<HTMLElement | null>(null);
+const dropdownTriggerRef = ref<HTMLElement | null>(null);
 const visibleItems = ref<TabItem[]>([]);
 const overflowItems = ref<TabItem[]>([]);
 
@@ -66,14 +67,21 @@ onMounted(async () => {
   // Wait for initial render of measurement container
   await nextTick();
   calculateLayout();
+  updateDropdownWidth(); // Calculate dropdown width after mount
   
   if (containerRef.value) {
     resizeObserver = new ResizeObserver(() => {
-        requestAnimationFrame(calculateLayout);
+        requestAnimationFrame(() => {
+          calculateLayout();
+          updateDropdownWidth(); // Update on resize
+        });
     });
     resizeObserver.observe(containerRef.value);
   }
-  window.addEventListener('resize', calculateLayout);
+  window.addEventListener('resize', () => {
+    calculateLayout();
+    updateDropdownWidth();
+  });
 });
 
 onBeforeUnmount(() => {
@@ -85,7 +93,14 @@ onBeforeUnmount(() => {
 watch(() => props.items, async () => {
     await nextTick();
     calculateLayout();
+    updateDropdownWidth();
 }, { deep: true });
+
+// Watch for overflow items changes to update dropdown width
+watch(overflowItems, async () => {
+  await nextTick();
+  updateDropdownWidth();
+});
 
 const selectTab = (id: string, to?: string) => {
   emit('update:modelValue', id);
@@ -93,6 +108,25 @@ const selectTab = (id: string, to?: string) => {
   // but we can also manually navigate if needed. 
   // For now, relies on NuxtLink or click actions.
 };
+
+// Track the minimum width for the dropdown menu
+const dropdownMinWidth = ref<number>(0);
+
+// Update dropdown width based on trigger button
+const updateDropdownWidth = () => {
+  if (dropdownTriggerRef.value) {
+    // Get the actual button element (may be wrapped by as-child)
+    const buttonEl = (dropdownTriggerRef.value as any).$el || dropdownTriggerRef.value;
+    if (buttonEl && typeof buttonEl.offsetWidth === 'number') {
+      dropdownMinWidth.value = buttonEl.offsetWidth;
+    }
+  }
+};
+
+// Compute the style object
+const dropdownMenuStyle = computed(() => {
+  return dropdownMinWidth.value > 0 ? { minWidth: `${dropdownMinWidth.value}px` } : {};
+});
 </script>
 
 <template>
@@ -127,13 +161,25 @@ const selectTab = (id: string, to?: string) => {
     </div>
 
     <!-- Overflow Menu -->
-    <DropdownMenu v-if="overflowItems.length > 0">
-      <DropdownMenuTrigger as-child>
-        <Button variant="ghost" class="rounded-none h-10 px-3 font-serif text-sm text-muted-foreground hover:bg-muted mb-[1px]">
-          <span class="material-symbols-sharp text-[20px]">more_horiz</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" class="w-48 rounded-none">
+    <div 
+      v-if="overflowItems.length > 0"
+      :style="{ '--dropdown-min-width': `${dropdownMinWidth}px` }"
+    >
+      <DropdownMenu>
+        <DropdownMenuTrigger as-child>
+          <Button 
+            ref="dropdownTriggerRef"
+            variant="ghost" 
+            class="rounded-none h-10 px-3 font-serif text-sm text-muted-foreground hover:bg-muted mb-[1px]"
+          >
+            <span class="material-symbols-sharp text-[20px]">more_horiz</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent 
+          align="end" 
+          class="rounded-none"
+          :class="dropdownMinWidth > 0 ? 'dropdown-with-min-width' : ''"
+        >
         <DropdownMenuItem
           v-for="item in overflowItems"
           :key="item.id"
@@ -153,6 +199,7 @@ const selectTab = (id: string, to?: string) => {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  </div>
 
     <!-- HIDDEN MEASUREMENT CONTAINER -->
     <!-- Mimics the styles of the visible items exactly but rendered off-screen -->
@@ -170,3 +217,8 @@ const selectTab = (id: string, to?: string) => {
   </div>
 </template>
 
+<style scoped>
+.dropdown-with-min-width {
+  min-width: var(--dropdown-min-width, auto);
+}
+</style>
