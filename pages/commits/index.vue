@@ -1,39 +1,37 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import ReadingContainer from '@/components/ReadingContainer.vue';
 
 const route = useRoute();
 const branch = ref(route.query.branch || 'main');
 const file = ref(route.query.file || '');
-const commits = ref<any[]>([]);
-const loading = ref(false);
 
 const breadcrumbItems = [
   { label: 'Αρχική', to: '/' },
   { label: 'Ιστορικό Αλλαγών' }
 ];
 
-const fetchCommits = async () => {
-  loading.value = true;
-  try {
-    let url = `/api/github/commits?sha=${branch.value}&limit=30`;
-    if (file.value) {
-      url += `&path=${file.value}`;
-    }
-    const response = await fetch(url);
-    if (response.ok) {
-      commits.value = await response.json();
-    }
-  } catch (error) {
-    console.error('Failed to fetch commits:', error);
-  } finally {
-    loading.value = false;
+// Build URL with optional path parameter
+const commitsUrl = computed(() => {
+  let url = `/api/github/commits?sha=${branch.value}&limit=30`;
+  if (file.value) {
+    url += `&path=${file.value}`;
   }
-};
+  return url;
+});
 
-onMounted(() => {
-  fetchCommits();
+// Use useFetch for better cache control
+const { data: commits, pending: loading, refresh: refreshCommits } = await useFetch<any[]>(commitsUrl, {
+  key: computed(() => `commits-${branch.value}-${file.value || 'all'}`),
+  default: () => []
+});
+
+// Watch for route changes and refresh
+watch(() => route.query, () => {
+  branch.value = route.query.branch as string || 'main';
+  file.value = route.query.file as string || '';
+  refreshCommits();
 });
 
 const formatGreekRelativeTime = (dateString: string) => {
