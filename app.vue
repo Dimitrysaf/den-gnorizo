@@ -29,7 +29,7 @@ const activeTab = computed({
 
 <template>
   <div class="w-full font-serif">
-    <div class="w-full bg-muted/20 shadow-[inset_0_-20px_30px_-20px_rgba(0,0,0,0.1)]">
+    <div class="w-full bg-muted/20 shadow-[inset_0_-20px_30px_-20px_rgba(0,0,0,0.1)] print-hide">
         <div class="pt-6 px-6 pb-2">
             <h1 class="text-3xl font-serif font-bold text-foreground">A' Συντακτική Βουλή των Πολιτών</h1>
         </div>

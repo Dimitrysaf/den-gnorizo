@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import BranchMenu from '@/components/BranchMenu.vue';
+import RefreshButton from '@/components/RefreshButton.vue';
 import PrintButton from '@/components/PrintButton.vue';
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue';
 
@@ -58,7 +59,14 @@ const formatGreekRelativeTime = (dateString: string) => {
 };
 
 // Constitution metadata
-const { data: metadata, error: metadataError } = await useFetch<ConstitutionMetadata>('/api/github/metadata')
+const { data: metadata, error: metadataError, refresh: refreshMetadata } = await useFetch<ConstitutionMetadata>('/api/github/metadata', {
+  key: 'constitution-metadata'
+})
+
+const handleRefresh = async () => {
+  // Clear the cache by adding a timestamp to force refetch
+  await refreshMetadata()
+}
 </script>
 
 <template>
@@ -66,42 +74,47 @@ const { data: metadata, error: metadataError } = await useFetch<ConstitutionMeta
     <div class="space-y-6">
       <!-- Branch Menu and Commit Info -->
       <div class="space-y-4">
-        <div class="flex items-center gap-2">
-          <BranchMenu @select="handleBranchSelect" />
-          <PrintButton />
-        </div>
+        <!-- Toolbar with buttons and commit message -->
+        <div class="border border-border rounded-md bg-muted/30 overflow-hidden print-hide">
+          <!-- Buttons row with padding -->
+          <div class="flex items-center gap-2 p-3 pb-2">
+            <BranchMenu @select="handleBranchSelect" />
+            <RefreshButton @refresh="handleRefresh" />
+            <PrintButton />
+          </div>
         
-        <!-- Commit Info Bar Skeleton -->
-        <div v-if="loading" class="flex items-center w-full gap-2 h-9 p-2 -ml-2">
-          <Skeleton class="h-5 w-32" />
-          <Skeleton class="h-5 flex-1" />
-          <Skeleton class="h-5 w-20" />
-          <Skeleton class="h-5 w-24" />
-        </div>
+          <!-- Commit Info Bar Skeleton -->
+          <div v-if="loading" class="flex items-center w-full gap-2 h-9 px-3 pb-3">
+            <Skeleton class="h-5 w-32" />
+            <Skeleton class="h-5 flex-1" />
+            <Skeleton class="h-5 w-20" />
+            <Skeleton class="h-5 w-24" />
+          </div>
 
-        <!-- Commit Info Bar -->
-        <NuxtLink 
-          v-else-if="latestCommit" 
-          :to="`/commits?branch=${selectedBranch}`" 
-          class="flex items-center w-full gap-2 text-sm text-muted-foreground hover:bg-muted/50 p-2 -ml-2 rounded-md transition-colors block"
-        >
-          <span class="flex items-center gap-1 font-medium text-foreground">
-            <span class="material-symbols-sharp text-[16px]">person</span>
-            {{ latestCommit.commit.author.name }}
-          </span>
-          
-          <span class="truncate">{{ latestCommit.commit.message }}</span>
-          
-          <div class="flex-1"></div>
-          
-          <span class="font-mono text-xs bg-muted px-1.5 py-0.5 rounded text-foreground">
-            {{ latestCommit.sha.substring(0, 7) }}
-          </span>
-          
-          <span class="text-base font-medium text-foreground">
-            {{ formatGreekRelativeTime(latestCommit.commit.author.date) }}
-          </span>
-        </NuxtLink>
+          <!-- Commit Info Bar - attached to bottom -->
+          <NuxtLink 
+            v-else-if="latestCommit" 
+            :to="`/commits?branch=${selectedBranch}`" 
+            class="flex items-center w-full gap-2 text-sm text-muted-foreground hover:bg-muted/50 px-3 py-2 transition-colors block print-hide"
+          >
+            <span class="flex items-center gap-1 font-medium text-foreground">
+              <span class="material-symbols-sharp text-[16px]">person</span>
+              {{ latestCommit.commit.author.name }}
+            </span>
+            
+            <span class="truncate">{{ latestCommit.commit.message }}</span>
+            
+            <div class="flex-1"></div>
+            
+            <span class="font-mono text-xs bg-muted px-1.5 py-0.5 rounded text-foreground">
+              {{ latestCommit.sha.substring(0, 7) }}
+            </span>
+            
+            <span class="text-base font-medium text-foreground">
+              {{ formatGreekRelativeTime(latestCommit.commit.author.date) }}
+            </span>
+          </NuxtLink>
+        </div>
       </div>
 
       <!-- Constitution Title -->

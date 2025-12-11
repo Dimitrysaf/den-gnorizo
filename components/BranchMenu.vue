@@ -59,7 +59,7 @@ const selectBranch = (branchName: string) => {
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as-child :disabled="loading">
-      <Button variant="outline" class="font-serif min-w-[140px]">
+      <Button variant="outline" size="sm" class="font-serif min-w-[140px]">
         <template v-if="loading">
             <Skeleton class="h-5 w-24" />
         </template>

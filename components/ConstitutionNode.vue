@@ -121,8 +121,8 @@ const headingTag = computed(() => {
       :is="headingTag" 
       class="font-serif"
       :class="{
-        'text-3xl font-bold mb-6 pb-3 border-b-2 border-border': node.type === 'title',
-        'text-2xl font-semibold mb-4 mt-8 pb-2 border-b border-border': node.type === 'section',
+        'text-3xl font-bold mb-6 pb-0 border-b-2 border-border': node.type === 'title',
+        'text-2xl font-semibold mb-4 mt-8 pb-0 border-b border-border': node.type === 'section',
         'text-xl font-semibold mb-3 mt-6': node.type === 'part',
         'text-lg font-bold mb-2 mt-4': node.type === 'article',
       }"

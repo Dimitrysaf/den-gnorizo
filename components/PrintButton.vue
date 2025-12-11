@@ -29,7 +29,7 @@ const printConstitution = (includeAmendments: boolean) => {
         Εκτύπωση
       </Button>
     </DropdownMenuTrigger>
-    <DropdownMenuContent align="end">
+    <DropdownMenuContent align="end" class="print-hide">
       <DropdownMenuItem @click="printConstitution(false)" class="font-serif cursor-pointer">
         <span class="material-symbols-sharp text-[18px] mr-2">description</span>
         Μόνο κείμενο
