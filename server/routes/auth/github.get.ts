@@ -5,6 +5,7 @@ export default defineOAuthGitHubEventHandler({
             login: user.login,
             name: user.name,
             avatar: user.avatar_url,
+            accessToken: tokens.access_token, // Store user's OAuth token for write operations
             loggedInAt: Date.now(),
         })
 

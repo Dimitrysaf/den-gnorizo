@@ -30,15 +30,18 @@ This project is a Nuxt application that provides an API to interact with the Git
     *   **Ρυθμίσεις** (`settings.vue`): Settings page with GitHub authentication
 *   **Navigation**: Responsive tab navigation using `ResponsiveTabs.vue` component
 *   **Authentication**: GitHub OAuth integration using `nuxt-auth-utils`
-    *   Users can authenticate with their GitHub account
+    *   Users can authenticate with their GitHub account (simple login, no API setup required)
     *   Session management with encrypted cookies
     *   User profile display (avatar, username)
     *   Logout functionality
+    *   **Dual-Token System**:
+        *   **Read operations** (GET): Use server token - anyone can browse
+        *   **Write operations** (POST): Use authenticated user's OAuth token - users contribute as themselves
 
 ### Configuration
 
 *   **Environment Variables**:
-    *   `GITHUB_TOKEN`: Personal access token for server-side GitHub API calls
+    *   `GITHUB_TOKEN`: Personal access token for server-side GitHub API calls (read operations)
     *   `GITHUB_OWNER`: Repository owner
     *   `GITHUB_CONTENT_REPO`: Repository name
     *   `GITHUB_REPO_ID`: Repository ID for Discussions API
@@ -48,12 +51,16 @@ This project is a Nuxt application that provides an API to interact with the Git
 
 ## Current Plan
 
-The application now includes a Settings page with GitHub OAuth authentication. Users can:
+The application now includes a dual-token authentication system:
 
-1. Navigate to the Settings tab
-2. Click "Σύνδεση με GitHub" to authenticate
-3. Authorize the application on GitHub
-4. View their profile information
-5. Disconnect their account when needed
+**For Anonymous Users:**
+- Can browse all content (discussions, issues, PRs) using server token
+- No authentication required for viewing
 
-The OAuth flow is handled by `nuxt-auth-utils` module with secure session management.
+**For Authenticated Users:**
+- Sign in with GitHub (one-click, no API setup needed)
+- Create discussions, issues, and PRs as themselves
+- Contributions appear under their GitHub account
+- Uses their own API quota (not the server's)
+
+This approach provides the best of both worlds: open browsing for everyone, and proper attribution for contributors.

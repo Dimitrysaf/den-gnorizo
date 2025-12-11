@@ -1,5 +1,8 @@
 export default defineEventHandler(async (event) => {
-  const { githubToken, githubRepoId } = useRuntimeConfig();
+  // Require user authentication - this will throw 401 if not logged in
+  const userToken = await requireUserAuth(event);
+
+  const { githubRepoId } = useRuntimeConfig();
   const body = await readBody(event);
 
   const mutation = `
@@ -17,7 +20,7 @@ export default defineEventHandler(async (event) => {
   const response = await fetch("https://api.github.com/graphql", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${githubToken}`,
+      Authorization: `Bearer ${userToken}`, // Use authenticated user's token
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ query: mutation }),

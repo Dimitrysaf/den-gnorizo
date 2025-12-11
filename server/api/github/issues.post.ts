@@ -1,5 +1,8 @@
 export default defineEventHandler(async (event) => {
-  const { githubToken, githubOwner, githubRepo } = useRuntimeConfig();
+  // Require user authentication - this will throw 401 if not logged in
+  const userToken = await requireUserAuth(event);
+
+  const { githubOwner, githubRepo } = useRuntimeConfig();
   const body = await readBody(event);
 
   const response = await fetch(
@@ -7,7 +10,7 @@ export default defineEventHandler(async (event) => {
     {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${githubToken}`,
+        Authorization: `Bearer ${userToken}`, // Use authenticated user's token
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
