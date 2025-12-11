@@ -2,7 +2,10 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  css: ['~/assets/css/tailwind.css'],
+  css: [
+    '~/assets/css/tailwind.css',
+    '~/assets/css/print.css'
+  ],
   app: {
     head: {
       viewport: 'width=device-width, initial-scale=1, maximum-scale=1',

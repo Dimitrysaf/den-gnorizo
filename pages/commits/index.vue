@@ -5,9 +5,9 @@ import ReadingContainer from '@/components/ReadingContainer.vue';
 
 const route = useRoute();
 const branch = ref(route.query.branch || 'main');
+const file = ref(route.query.file || '');
 const commits = ref<any[]>([]);
 const loading = ref(false);
-
 
 const breadcrumbItems = [
   { label: 'Αρχική', to: '/' },
@@ -17,7 +17,11 @@ const breadcrumbItems = [
 const fetchCommits = async () => {
   loading.value = true;
   try {
-    const response = await fetch(`/api/github/commits?sha=${branch.value}&limit=30`);
+    let url = `/api/github/commits?sha=${branch.value}&limit=30`;
+    if (file.value) {
+      url += `&path=${file.value}`;
+    }
+    const response = await fetch(url);
     if (response.ok) {
       commits.value = await response.json();
     }
@@ -59,7 +63,12 @@ const formatGreekRelativeTime = (dateString: string) => {
     <div class="space-y-6">
       <AppBreadcrumb :items="breadcrumbItems" />
       <div class="flex items-center justify-between">
-        <h2 class="text-2xl font-serif font-semibold">Ιστορικό Αλλαγών</h2>
+        <div class="space-y-1">
+          <h2 class="text-2xl font-serif font-semibold">Ιστορικό Αλλαγών</h2>
+          <p v-if="file" class="text-sm text-muted-foreground font-serif">
+            Φιλτράρισμα για: <span class="font-mono text-foreground">{{ file }}</span>
+          </p>
+        </div>
         <span class="text-muted-foreground text-sm font-mono bg-muted px-2 py-1 rounded">
             {{ branch }}
         </span>
