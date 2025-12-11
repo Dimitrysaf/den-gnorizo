@@ -14,6 +14,15 @@ export default defineNuxtConfig({
     githubOwner: process.env.GITHUB_OWNER,
     githubRepo: process.env.GITHUB_CONTENT_REPO,
     githubRepoId: process.env.GITHUB_REPO_ID,
+    oauth: {
+      github: {
+        clientId: process.env.GITHUB_CLIENT_ID,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      }
+    },
+    session: {
+      password: process.env.NUXT_SESSION_PASSWORD || 'nuxt-auth-utils-session-password-32-chars-minimum'
+    },
     public: {
       apiBase: '/api'
     }
@@ -22,7 +31,8 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/tailwindcss',
     'shadcn-nuxt',
-    '@nuxtjs/google-fonts'
+    '@nuxtjs/google-fonts',
+    'nuxt-auth-utils'
   ],
   googleFonts: {
     families: {

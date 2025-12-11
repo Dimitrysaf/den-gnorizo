@@ -21,17 +21,39 @@ This project is a Nuxt application that provides an API to interact with the Git
 
 ### Frontend
 
-*   A simple Vue component in `app.vue` to demonstrate how to use the API endpoints.
-*   Buttons to fetch and display Issues, Pull Requests, Discussions, Branches, and the Repository ID.
+*   A responsive Vue application with multiple pages:
+    *   **Home** (`index.vue`): Main landing page
+    *   **Συζήτηση** (`discuss.vue`): Discussions page
+    *   **Προβλήματα** (`issues.vue`): Issues page
+    *   **Προτάσεις** (`ideas.vue`): Ideas/Pull Requests page
+    *   **Σχετικά** (`about.vue`): About page
+    *   **Ρυθμίσεις** (`settings.vue`): Settings page with GitHub authentication
+*   **Navigation**: Responsive tab navigation using `ResponsiveTabs.vue` component
+*   **Authentication**: GitHub OAuth integration using `nuxt-auth-utils`
+    *   Users can authenticate with their GitHub account
+    *   Session management with encrypted cookies
+    *   User profile display (avatar, username)
+    *   Logout functionality
+
+### Configuration
+
+*   **Environment Variables**:
+    *   `GITHUB_TOKEN`: Personal access token for server-side GitHub API calls
+    *   `GITHUB_OWNER`: Repository owner
+    *   `GITHUB_CONTENT_REPO`: Repository name
+    *   `GITHUB_REPO_ID`: Repository ID for Discussions API
+    *   `GITHUB_CLIENT_ID`: OAuth App Client ID
+    *   `GITHUB_CLIENT_SECRET`: OAuth App Client Secret
+    *   `NUXT_SESSION_PASSWORD`: Session encryption password (32+ characters)
 
 ## Current Plan
 
-The application was failing to fetch data from the GitHub API due to a misconfiguration in the environment variables. I have corrected the `nuxt.config.ts` to use the `GITHUB_CONTENT_REPO` variable from the `.env` file.
+The application now includes a Settings page with GitHub OAuth authentication. Users can:
 
-Additionally, the `GITHUB_REPO_ID` was missing, which is required for the Discussions API. I have added a new API endpoint and a button in the frontend to fetch this ID. The user needs to:
+1. Navigate to the Settings tab
+2. Click "Σύνδεση με GitHub" to authenticate
+3. Authorize the application on GitHub
+4. View their profile information
+5. Disconnect their account when needed
 
-1.  Click the "Fetch Repo ID" button.
-2.  Copy the displayed repository ID.
-3.  Paste the ID into the `.env` file for the `GITHUB_REPO_ID` variable.
-
-After completing these steps, the application should be fully functional.
+The OAuth flow is handled by `nuxt-auth-utils` module with secure session management.

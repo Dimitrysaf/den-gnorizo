@@ -11,6 +11,7 @@ const tabs = [
   { id: 'issues', label: 'Προβλήματα', icon: 'bug_report', to: '/issues' },
   { id: 'ideas', label: 'Προτάσεις', icon: 'lightbulb', to: '/ideas' },
   { id: 'about', label: 'Σχετικά', icon: 'info', to: '/about' },
+  { id: 'settings', label: 'Ρυθμίσεις', icon: 'settings', to: '/settings' },
 ];
 
 const activeTab = computed({
