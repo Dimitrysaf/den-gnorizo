@@ -77,7 +77,7 @@ const handleRefresh = async () => {
         <!-- Toolbar with buttons and commit message -->
         <div class="border border-border rounded-md bg-muted/30 overflow-hidden print-hide">
           <!-- Buttons row with padding -->
-          <div class="flex items-center gap-2 p-3 pb-2">
+          <div class="flex items-center flex-wrap gap-2 p-3 pb-2">
             <BranchMenu @select="handleBranchSelect" />
             <RefreshButton @refresh="handleRefresh" />
             <PrintButton />
