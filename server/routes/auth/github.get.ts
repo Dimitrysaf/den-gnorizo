@@ -1,13 +1,15 @@
 export default defineOAuthGitHubEventHandler({
     async onSuccess(event, { user, tokens }) {
-        await setUserSession(event, {
+        const userData = {
             id: user.id,
             login: user.login,
             name: user.name,
             avatar: user.avatar_url,
-            accessToken: tokens.access_token, // Store user's OAuth token for write operations
+            accessToken: tokens.access_token,
             loggedInAt: Date.now(),
-        })
+        }
+
+        await replaceUserSession(event, userData)
 
         return sendRedirect(event, '/settings')
     },

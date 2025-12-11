@@ -7,17 +7,19 @@ interface GitHubUser {
   login: string;
   name?: string;
   avatar?: string;
+  accessToken?: string;
+  loggedInAt?: number;
 }
 
-const { loggedIn, user, clear } = useUserSession()
+// Fetch session directly from server as workaround
+const { data: sessionData, refresh: refreshSession } = await useFetch('/api/auth/session-check')
 
-// The session stores user data directly, not nested under a 'user' property
-const githubUser = computed(() => user.value as GitHubUser | null)
+const loggedIn = computed(() => sessionData.value?.hasSession || false)
+const githubUser = computed(() => sessionData.value?.sessionData as GitHubUser | null)
 
 const isLoggingOut = ref(false)
 
 const handleLogin = () => {
-  // Redirect to GitHub OAuth
   window.location.href = '/auth/github'
 }
 
@@ -25,7 +27,7 @@ const handleLogout = async () => {
   isLoggingOut.value = true
   try {
     await $fetch('/api/auth/logout', { method: 'POST' })
-    await clear()
+    await refreshSession()
   } catch (error) {
     console.error('Logout error:', error)
   } finally {
@@ -35,7 +37,7 @@ const handleLogout = async () => {
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto">
+  <ReadingContainer>
     <h1 class="text-3xl font-serif font-bold text-foreground mb-8">Ρυθμίσεις</h1>
     
     <!-- Account Section -->
@@ -88,7 +90,7 @@ const handleLogout = async () => {
         </div>
       </div>
     </section>
-  </div>
+  </ReadingContainer>
 </template>
 
 <style scoped>
