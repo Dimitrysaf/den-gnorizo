@@ -2,10 +2,7 @@ import Layout from './components/layout/Layout'
 
 function App() {
   return (
-    <Layout
-      currentTab="home"
-      onTabChange={(tab) => console.log('Tab changed to:', tab)}
-    >
+    <Layout currentTab="home">
       <div>Main content</div>
     </Layout>
   )
