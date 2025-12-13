@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "astro": "^5.16.5",
-    "fomantic-ui": "^2.10.0-beta.74"
+    "fomantic-ui": "^2.10.0-beta.74",
+    "fomantic-ui-css": "^2.9.4"
   }
 }
