@@ -52,7 +52,6 @@ const Navigation = ({ isMobile })=>{
             key: 'about'
         }
     ];
-    // Prevent body scroll when sidebar is open
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "Navigation.useEffect": ()=>{
             if (isOpen && isMobile) {
@@ -86,12 +85,12 @@ const Navigation = ({ isMobile })=>{
                                 className: "bars icon"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Navigation.tsx",
-                                lineNumber: 46,
+                                lineNumber: 45,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0))
                         }, void 0, false, {
                             fileName: "[project]/src/components/Navigation.tsx",
-                            lineNumber: 45,
+                            lineNumber: 44,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -100,42 +99,33 @@ const Navigation = ({ isMobile })=>{
                                 className: "item",
                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "ui transparent icon input",
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                            type: "text",
-                                            placeholder: "Αναζήτηση..."
-                                        }, void 0, false, {
-                                            fileName: "[project]/src/components/Navigation.tsx",
-                                            lineNumber: 51,
-                                            columnNumber: 17
-                                        }, ("TURBOPACK compile-time value", void 0)),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("i", {
-                                            className: "search icon"
-                                        }, void 0, false, {
-                                            fileName: "[project]/src/components/Navigation.tsx",
-                                            lineNumber: 52,
-                                            columnNumber: 17
-                                        }, ("TURBOPACK compile-time value", void 0))
-                                    ]
-                                }, void 0, true, {
+                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                        type: "text",
+                                        placeholder: "Αναζήτηση..."
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/Navigation.tsx",
+                                        lineNumber: 50,
+                                        columnNumber: 17
+                                    }, ("TURBOPACK compile-time value", void 0))
+                                }, void 0, false, {
                                     fileName: "[project]/src/components/Navigation.tsx",
-                                    lineNumber: 50,
+                                    lineNumber: 49,
                                     columnNumber: 15
                                 }, ("TURBOPACK compile-time value", void 0))
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Navigation.tsx",
-                                lineNumber: 49,
+                                lineNumber: 48,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0))
                         }, void 0, false, {
                             fileName: "[project]/src/components/Navigation.tsx",
-                            lineNumber: 48,
+                            lineNumber: 47,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/Navigation.tsx",
-                    lineNumber: 44,
+                    lineNumber: 43,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -144,7 +134,7 @@ const Navigation = ({ isMobile })=>{
                     }
                 }, void 0, false, {
                     fileName: "[project]/src/components/Navigation.tsx",
-                    lineNumber: 59,
+                    lineNumber: 56,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 isOpen && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -157,7 +147,7 @@ const Navigation = ({ isMobile })=>{
                     }
                 }, void 0, false, {
                     fileName: "[project]/src/components/Navigation.tsx",
-                    lineNumber: 63,
+                    lineNumber: 59,
                     columnNumber: 11
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -195,7 +185,7 @@ const Navigation = ({ isMobile })=>{
                                                 className: "list icon"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/Navigation.tsx",
-                                                lineNumber: 93,
+                                                lineNumber: 88,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -203,13 +193,13 @@ const Navigation = ({ isMobile })=>{
                                                 children: "Πλοήγηση"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/Navigation.tsx",
-                                                lineNumber: 94,
+                                                lineNumber: 89,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/Navigation.tsx",
-                                        lineNumber: 92,
+                                        lineNumber: 87,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("i", {
@@ -221,13 +211,13 @@ const Navigation = ({ isMobile })=>{
                                         }
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/Navigation.tsx",
-                                        lineNumber: 96,
+                                        lineNumber: 91,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/Navigation.tsx",
-                                lineNumber: 91,
+                                lineNumber: 86,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -244,23 +234,23 @@ const Navigation = ({ isMobile })=>{
                                         children: item.label
                                     }, item.key, false, {
                                         fileName: "[project]/src/components/Navigation.tsx",
-                                        lineNumber: 104,
+                                        lineNumber: 99,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0)))
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Navigation.tsx",
-                                lineNumber: 102,
+                                lineNumber: 97,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Navigation.tsx",
-                        lineNumber: 90,
+                        lineNumber: 85,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0))
                 }, void 0, false, {
                     fileName: "[project]/src/components/Navigation.tsx",
-                    lineNumber: 75,
+                    lineNumber: 70,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))
             ]
@@ -275,7 +265,7 @@ const Navigation = ({ isMobile })=>{
                     children: item.label
                 }, item.key, false, {
                     fileName: "[project]/src/components/Navigation.tsx",
-                    lineNumber: 123,
+                    lineNumber: 118,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -284,42 +274,33 @@ const Navigation = ({ isMobile })=>{
                     className: "item",
                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "ui transparent icon input",
-                        children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                type: "text",
-                                placeholder: "Αναζήτηση..."
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/Navigation.tsx",
-                                lineNumber: 134,
-                                columnNumber: 13
-                            }, ("TURBOPACK compile-time value", void 0)),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("i", {
-                                className: "search icon"
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/Navigation.tsx",
-                                lineNumber: 135,
-                                columnNumber: 13
-                            }, ("TURBOPACK compile-time value", void 0))
-                        ]
-                    }, void 0, true, {
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                            type: "text",
+                            placeholder: "Αναζήτηση..."
+                        }, void 0, false, {
+                            fileName: "[project]/src/components/Navigation.tsx",
+                            lineNumber: 129,
+                            columnNumber: 13
+                        }, ("TURBOPACK compile-time value", void 0))
+                    }, void 0, false, {
                         fileName: "[project]/src/components/Navigation.tsx",
-                        lineNumber: 133,
+                        lineNumber: 128,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0))
                 }, void 0, false, {
                     fileName: "[project]/src/components/Navigation.tsx",
-                    lineNumber: 132,
+                    lineNumber: 127,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))
             }, void 0, false, {
                 fileName: "[project]/src/components/Navigation.tsx",
-                lineNumber: 131,
+                lineNumber: 126,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0))
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/Navigation.tsx",
-        lineNumber: 121,
+        lineNumber: 116,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
@@ -353,12 +334,15 @@ var _s = __turbopack_context__.k.signature();
 ;
 function LayoutWrapper({ children }) {
     _s();
-    const [isMobile, setIsMobile] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [isMobile, setIsMobile] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "LayoutWrapper.useEffect": ()=>{
             const checkMobile = {
                 "LayoutWrapper.useEffect.checkMobile": ()=>{
-                    setIsMobile(window.innerWidth <= 768);
+                    const width = window.innerWidth;
+                    const isMobileMedia = window.matchMedia('(max-width: 768px)').matches;
+                    console.log('Width:', width, 'matchMedia mobile:', isMobileMedia);
+                    setIsMobile(isMobileMedia || width <= 768);
                 }
             }["LayoutWrapper.useEffect.checkMobile"];
             checkMobile();
@@ -368,6 +352,26 @@ function LayoutWrapper({ children }) {
             })["LayoutWrapper.useEffect"];
         }
     }["LayoutWrapper.useEffect"], []);
+    if (isMobile === null) {
+        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+            className: "ui container",
+            style: {
+                marginTop: '20px',
+                textAlign: 'center'
+            },
+            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "ui active inline loader"
+            }, void 0, false, {
+                fileName: "[project]/src/components/LayoutWrapper.tsx",
+                lineNumber: 27,
+                columnNumber: 9
+            }, this)
+        }, void 0, false, {
+            fileName: "[project]/src/components/LayoutWrapper.tsx",
+            lineNumber: 26,
+            columnNumber: 7
+        }, this);
+    }
     if (isMobile) {
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
             className: "ui container",
@@ -381,7 +385,7 @@ function LayoutWrapper({ children }) {
                     isMobile: true
                 }, void 0, false, {
                     fileName: "[project]/src/components/LayoutWrapper.tsx",
-                    lineNumber: 23,
+                    lineNumber: 35,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
@@ -392,7 +396,7 @@ function LayoutWrapper({ children }) {
                     children: "Α` Συντακτική Βουλή των Πολιτών"
                 }, void 0, false, {
                     fileName: "[project]/src/components/LayoutWrapper.tsx",
-                    lineNumber: 24,
+                    lineNumber: 36,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -402,13 +406,13 @@ function LayoutWrapper({ children }) {
                     children: children
                 }, void 0, false, {
                     fileName: "[project]/src/components/LayoutWrapper.tsx",
-                    lineNumber: 25,
+                    lineNumber: 37,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/LayoutWrapper.tsx",
-            lineNumber: 22,
+            lineNumber: 34,
             columnNumber: 7
         }, this);
     }
@@ -424,14 +428,14 @@ function LayoutWrapper({ children }) {
                 children: "Α` Συντακτική Βουλή των Πολιτών"
             }, void 0, false, {
                 fileName: "[project]/src/components/LayoutWrapper.tsx",
-                lineNumber: 34,
+                lineNumber: 46,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$Navigation$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
                 isMobile: false
             }, void 0, false, {
                 fileName: "[project]/src/components/LayoutWrapper.tsx",
-                lineNumber: 35,
+                lineNumber: 47,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -439,17 +443,17 @@ function LayoutWrapper({ children }) {
                 children: children
             }, void 0, false, {
                 fileName: "[project]/src/components/LayoutWrapper.tsx",
-                lineNumber: 36,
+                lineNumber: 48,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/LayoutWrapper.tsx",
-        lineNumber: 33,
+        lineNumber: 45,
         columnNumber: 5
     }, this);
 }
-_s(LayoutWrapper, "0VTTNJATKABQPGLm9RVT0tKGUgU=");
+_s(LayoutWrapper, "yIGbbNDQxDSmDuerDq3o1S1DZ70=");
 _c = LayoutWrapper;
 var _c;
 __turbopack_context__.k.register(_c, "LayoutWrapper");

@@ -21,7 +21,6 @@ const Navigation = ({ isMobile }: NavigationProps) => {
     { href: '/about', label: 'Σχετικά', key: 'about' },
   ];
 
-  // Prevent body scroll when sidebar is open
   useEffect(() => {
     if (isOpen && isMobile) {
       document.body.style.overflow = 'hidden';
@@ -49,16 +48,13 @@ const Navigation = ({ isMobile }: NavigationProps) => {
             <div className="item">
               <div className="ui transparent icon input">
                 <input type="text" placeholder="Αναζήτηση..." />
-                <i className="search icon"></i>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Spacer to prevent content from going under fixed menu */}
         <div style={{ height: '42px' }}></div>
 
-        {/* Overlay dimmer */}
         {isOpen && (
           <div
             className="ui dimmer active"
@@ -71,7 +67,6 @@ const Navigation = ({ isMobile }: NavigationProps) => {
           />
         )}
 
-        {/* Sidebar menu - fullscreen on mobile */}
         <div
           style={{
             position: 'fixed',
@@ -132,7 +127,6 @@ const Navigation = ({ isMobile }: NavigationProps) => {
         <div className="item">
           <div className="ui transparent icon input">
             <input type="text" placeholder="Αναζήτηση..." />
-            <i className="search icon"></i>
           </div>
         </div>
       </div>

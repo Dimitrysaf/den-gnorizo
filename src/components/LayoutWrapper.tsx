@@ -4,18 +4,30 @@ import { useEffect, useState } from 'react';
 import Navigation from './Navigation';
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+      const width = window.innerWidth;
+      const isMobileMedia = window.matchMedia('(max-width: 768px)').matches;
+
+      console.log('Width:', width, 'matchMedia mobile:', isMobileMedia);
+      setIsMobile(isMobileMedia || width <= 768);
     };
-    
     checkMobile();
+
     window.addEventListener('resize', checkMobile);
     
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  if (isMobile === null) {
+    return (
+      <div className="ui container" style={{ marginTop: '20px', textAlign: 'center' }}>
+        <div className="ui active inline loader"></div>
+      </div>
+    );
+  }
 
   if (isMobile) {
     return (
