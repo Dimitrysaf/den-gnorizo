@@ -1,0 +1,53 @@
+---
+
+const menuItems = [
+  { href: '/', label: 'Αρχική', icon: 'home' },
+  { href: '/discuss', label: 'Συζήτηση', icon: 'comments' },
+  { href: '/prs', label: 'Προτάσεις', icon: 'file alternate' },
+  { href: '/issues', label: 'Αναφορές', icon: 'bug' },
+  { href: '/settings', label: 'Ρυθμίσεις', icon: 'cog' },
+  { href: '/about', label: 'Σχετικά', icon: 'info circle' },
+];
+const isMobile = Astro.props.isMobile;
+---
+
+{isMobile ? (
+  <>
+    <div class="ui top fixed menu">
+      <a class="item" id="menu-toggle">
+        <i class="bars icon"></i> Μενού
+      </a>
+    </div>
+
+    <div style="height:42px"></div>
+
+    <div id="mobile-menu" class="ui vertical menu" style="display:none">
+      {menuItems.map(item => (
+        <a class="item" href={item.href}>
+          <i class={`icon ${item.icon}`}></i>
+          {item.label}
+        </a>
+      ))}
+    </div>
+
+    <script>
+      const toggle = document.getElementById('menu-toggle');
+      const menu = document.getElementById('mobile-menu');
+
+      toggle?.addEventListener('click', () => {
+        const open = menu.style.display === 'block';
+        menu.style.display = open ? 'none' : 'block';
+        document.body.style.overflow = open ? '' : 'hidden';
+      });
+    </script>
+  </>
+) : (
+  <div class="ui pointing menu compact labeled icon fluid centered">
+    {menuItems.map(item => (
+      <a class="item" href={item.href}>
+        <i class={`icon ${item.icon}`}></i>
+        {item.label}
+      </a>
+    ))}
+  </div>
+)}

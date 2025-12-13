@@ -1,29 +1,15 @@
 {
   "name": "den-gnorizo",
-  "version": "0.1.0",
-  "private": true,
+  "type": "module",
+  "version": "0.0.1",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
   },
   "dependencies": {
-    "fomantic-ui": "^2.9.4",
-    "fomantic-ui-css": "^2.9.4",
-    "fomantic-ui-react": "^0.0.1-alpha.12",
-    "next": "16.0.10",
-    "react": "19.2.1",
-    "react-dom": "19.2.1"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.0.10",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "astro": "^5.16.5",
+    "fomantic-ui": "^2.10.0-beta.74"
   }
 }
