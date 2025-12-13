@@ -42,19 +42,15 @@ const Navigation = ({ isMobile }: NavigationProps) => {
       <>
         <div className="ui top fixed menu">
           <a className="item" onClick={() => setIsOpen(!isOpen)}>
-            <i className="bars icon"></i>
+            <span>
+              <i className="bars icon"></i>
+              Μενού
+            </span>
+
           </a>
-          <div className="right menu">
-            <div className="item">
-              <div className="ui transparent icon input">
-                <input type="text" placeholder="Αναζήτηση..." />
-              </div>
-            </div>
-          </div>
         </div>
 
         <div style={{ height: '42px' }}></div>
-
         {isOpen && (
           <div
             className="ui dimmer active"
@@ -85,8 +81,10 @@ const Navigation = ({ isMobile }: NavigationProps) => {
           <div style={{ padding: '1rem', minHeight: '100vh' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'left', marginBottom: '1rem' }}>
               <div className="ui header">
-                <i className="list icon"></i>
-                <div className="content">Πλοήγηση</div>
+                <span>
+                  <i className="list icon"></i>
+                  Πλοήγηση
+                </span>
               </div>
               <i
                 className="close icon"
@@ -101,7 +99,7 @@ const Navigation = ({ isMobile }: NavigationProps) => {
                   href={item.href}
                   className={`item ${pathname === item.href ? 'active' : ''}`}
                   onClick={handleLinkClick}
-
+                  style={{textAlign: 'left'}}
                 >
                   <span>
                     <i className={`icon ${item.icon}`}></i>
@@ -117,7 +115,7 @@ const Navigation = ({ isMobile }: NavigationProps) => {
   }
 
   return (
-    <div className="ui pointing menu labeled icon">
+    <div className="ui pointing menu labeled icon fluid centered">
       {menuItems.map((item) => (
         <Link
           key={item.key}
@@ -128,16 +126,8 @@ const Navigation = ({ isMobile }: NavigationProps) => {
             <i className={`icon ${item.icon}`}></i>
             {item.label}
           </span>
-
         </Link>
       ))}
-      <div className="right menu">
-        <div className="item">
-          <div className="ui transparent input">
-            <input type="text" placeholder="Αναζήτηση..." />
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
