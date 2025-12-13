@@ -83,7 +83,7 @@ const Navigation = ({ isMobile }: NavigationProps) => {
           }}
         >
           <div style={{ padding: '1rem', minHeight: '100vh' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'left', marginBottom: '1rem' }}>
               <div className="ui header">
                 <i className="list icon"></i>
                 <div className="content">Πλοήγηση</div>
