@@ -13,12 +13,12 @@ const Navigation = ({ isMobile }: NavigationProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const menuItems = [
-    { href: '/', label: 'Αρχική', key: 'home' },
-    { href: '/discuss', label: 'Συζήτηση', key: 'discuss' },
-    { href: '/prs', label: 'Προτάσεις', key: 'prs' },
-    { href: '/issues', label: 'Αναφορές', key: 'issues' },
-    { href: '/settings', label: 'Ρυθμίσεις', key: 'settings' },
-    { href: '/about', label: 'Σχετικά', key: 'about' },
+    { href: '/', label: 'Αρχική', key: 'home', icon: 'home' },
+    { href: '/discuss', label: 'Συζήτηση', key: 'discuss', icon: 'comments' },
+    { href: '/prs', label: 'Προτάσεις', key: 'prs', icon: 'file alternate' },
+    { href: '/issues', label: 'Αναφορές', key: 'issues', icon: 'bug' },
+    { href: '/settings', label: 'Ρυθμίσεις', key: 'settings', icon: 'cog' },
+    { href: '/about', label: 'Σχετικά', key: 'about', icon: 'info circle' },
   ];
 
   useEffect(() => {
@@ -94,15 +94,19 @@ const Navigation = ({ isMobile }: NavigationProps) => {
                 style={{ cursor: 'pointer', fontSize: '1.5rem' }}
               />
             </div>
-            <div className="ui vertical menu" style={{ width: '100%', border: 'none', boxShadow: 'none' }}>
+            <div className="ui vertical menu icon" style={{ width: '100%', border: 'none', boxShadow: 'none' }}>
               {menuItems.map((item) => (
                 <Link
                   key={item.key}
                   href={item.href}
                   className={`item ${pathname === item.href ? 'active' : ''}`}
                   onClick={handleLinkClick}
+
                 >
-                  {item.label}
+                  <span>
+                    <i className={`icon ${item.icon}`}></i>
+                    {item.label}
+                  </span>
                 </Link>
               ))}
             </div>
@@ -113,19 +117,23 @@ const Navigation = ({ isMobile }: NavigationProps) => {
   }
 
   return (
-    <div className="ui pointing menu">
+    <div className="ui pointing menu labeled icon">
       {menuItems.map((item) => (
         <Link
           key={item.key}
           href={item.href}
           className={`item ${pathname === item.href ? 'active' : ''}`}
         >
-          {item.label}
+          <span>
+            <i className={`icon ${item.icon}`}></i>
+            {item.label}
+          </span>
+
         </Link>
       ))}
       <div className="right menu">
         <div className="item">
-          <div className="ui transparent icon input">
+          <div className="ui transparent input">
             <input type="text" placeholder="Αναζήτηση..." />
           </div>
         </div>
