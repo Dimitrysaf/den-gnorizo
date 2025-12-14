@@ -6,13 +6,13 @@ const { node } = Astro.props;
 const getHeaderConfig = (type) => {
   switch (type) {
     case "title":
-      return { tag: "h1", label: "Τίτλος" };
+      return { tag: "h1", label: "Τίτλος", hasBorder: true };
     case "chapter":
-      return { tag: "h2", label: "Κεφάλαιο" };
+      return { tag: "h2", label: "Κεφάλαιο", hasBorder: true };
     case "section":
-      return { tag: "h3", label: "Τμήμα" };
+      return { tag: "h3", label: "Τμήμα", hasBorder: true };
     case "article":
-      return { tag: "h4", label: "Άρθρο" };
+      return { tag: "h4", label: "Άρθρο", hasBorder: false };
     default:
       return null;
   }
@@ -20,23 +20,86 @@ const getHeaderConfig = (type) => {
 
 const config = getHeaderConfig(node.type);
 const HeaderTag = config ? config.tag : "div";
+
+const baseStyle = "margin-top: 1.5em; margin-bottom: 0.5em;";
+const borderStyle = config?.hasBorder
+  ? "border-bottom: 1px solid rgba(0,0,0,0.15); padding-bottom: 0;"
+  : "border: none;";
+const finalStyle = `${baseStyle} ${borderStyle}`;
 ---
 
-{
-  config && (
-    <HeaderTag
-      class="ui header"
-      style="border: none; margin-top: 1.5em; margin-bottom: 0.5em;"
-    >
-      {config.label}&nbsp;{node.number} — {node.name}
-    </HeaderTag>
-  )
-}
+<div class="doc-node">
+  {
+    config && (
+      <HeaderTag class="ui header" style={finalStyle}>
+        {config.label}&nbsp;{node.number} — {node.name}
+      </HeaderTag>
+    )
+  }
 
-{
-  node.htmlContent && (
-    <div style="margin-bottom: 1em;" set:html={node.htmlContent} />
-  )
-}
+  {
+    node.htmlContent && (
+      <div class="article-content" set:html={node.htmlContent} />
+    )
+  }
 
-{node.children && node.children.map((child) => <DocNode node={child} />)}
+  {node.children && node.children.map((child) => <DocNode node={child} />)}
+</div>
+
+<style>
+  .article-content :global(p) {
+    margin-bottom: 0.5em;
+    text-align: justify;
+  }
+
+  .article-content :global(ol) {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 0;
+    counter-reset: item;
+  }
+
+  .article-content :global(li) {
+    position: relative;
+    padding-left: 0;
+    margin-bottom: 0.5em;
+  }
+
+  .article-content :global(li p) {
+    display: inline;
+    margin: 0;
+  }
+
+  .article-content :global(ol > li) {
+    counter-increment: item;
+  }
+  .article-content :global(ol > li::before) {
+    content: counter(item) " ";
+    font-size: 0.7em;
+    vertical-align: super;
+    margin-right: 0.4em;
+    font-weight: bold;
+    color: #555;
+  }
+
+  .article-content :global(ol ol) {
+    counter-reset: subitem;
+    margin-left: 1.5em;
+  }
+  .article-content :global(ol ol > li) {
+    counter-increment: subitem;
+  }
+  .article-content :global(ol ol > li::before) {
+    content: counter(subitem, lower-greek) " ";
+  }
+
+  .article-content :global(ol ol ol) {
+    counter-reset: subsubitem;
+  }
+  .article-content :global(ol ol ol > li) {
+    counter-increment: subsubitem;
+  }
+  .article-content :global(ol ol ol > li::before) {
+    content: counter(subsubitem) " ";
+  }
+</style>

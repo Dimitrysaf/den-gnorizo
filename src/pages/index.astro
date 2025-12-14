@@ -34,8 +34,8 @@ try {
 
         node.htmlContent = marked.parse(cleanMarkdown);
       } catch (err) {
-        console.error(`Error loading ${node.file}`, err);
-        node.htmlContent = `<p style="color:red">Error loading file.</p>`;
+        console.error(`Σφάλμα ${node.file}`, err);
+        node.htmlContent = `<p style="color:red">Κάτι πήγε πολύ στραβά, δες την κονσόλα για μυνήματα σφάλματος.</p>`;
       }
     }),
   );
@@ -48,7 +48,6 @@ try {
 <Layout>
   <h1 class="ui header">Αρχική</h1>
   <Tools />
-
   {
     error && (
       <div class="ui negative icon message">
