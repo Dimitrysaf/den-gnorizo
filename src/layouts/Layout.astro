@@ -2,40 +2,54 @@
 import "fomantic-ui-css/semantic.min.css";
 
 const menuItems = [
-  { href: '/', label: 'Αρχική', icon: 'home' },
-  { href: '/discussion', label: 'Συζήτηση', icon: 'comments' },
-  { href: '/prs', label: 'Προτάσεις', icon: 'file alternate' },
-  { href: '/issues', label: 'Αναφορές', icon: 'bug' },
-  { href: '/settings', label: 'Ρυθμίσεις', icon: 'cog' },
-  { href: '/about', label: 'Σχετικά', icon: 'info circle' },
+  { href: "/", label: "Αρχική", icon: "home" },
+  { href: "/discussion", label: "Συζήτηση", icon: "comments" },
+  { href: "/prs", label: "Προτάσεις", icon: "file alternate" },
+  { href: "/issues", label: "Αναφορές", icon: "bug" },
+  { href: "/settings", label: "Ρυθμίσεις", icon: "cog" },
+  { href: "/about", label: "Σχετικά", icon: "info circle" },
 ];
 
 const currentPath = Astro.url.pathname;
 
 const isActive = (href: string) => {
-  return currentPath === href || (href !== '/' && currentPath.startsWith(href));
+  return currentPath === href || (href !== "/" && currentPath.startsWith(href));
 };
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="el">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Α΄ Συντακτική Βουλή των Πολιτών</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.3/semantic.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.3/semantic.min.js"></script>
+    <script
+      src="https://code.jquery.com/jquery-3.6.0.min.js"
+      integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+      crossorigin="anonymous"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.3/semantic.min.css"
+    />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.3/semantic.min.js"
+    ></script>
     <style>
-      .desktop-only { display: none; }
-      .mobile-only { display: block; }
+      .desktop-only {
+        display: none;
+      }
+      .mobile-only {
+        display: block;
+      }
 
       @media (min-width: 992px) {
         .desktop-only {
           display: block;
           background-color: white;
         }
-        .mobile-only { display: none; }
+        .mobile-only {
+          display: none;
+        }
       }
 
       body.mobile-view {
@@ -94,7 +108,10 @@ const isActive = (href: string) => {
 
   <body>
     <!-- Mobile Flyout Menu - Direct child of body -->
-    <div class="ui left vertical inverted menu flyout mobile-only" id="sidebar-menu">
+    <div
+      class="ui left vertical inverted menu flyout mobile-only"
+      id="sidebar-menu"
+    >
       <i class="close icon"></i>
       <div class="header item">
         <h2 class="ui header">
@@ -103,15 +120,17 @@ const isActive = (href: string) => {
         </h2>
       </div>
       <div class="scrolling content">
-        {menuItems.map(item => (
-          <a
-            class={`item ${isActive(item.href) ? 'active' : ''}`}
-            href={item.href}
-          >
-            <i class={`${item.icon} icon`}></i>
-            {item.label}
-          </a>
-        ))}
+        {
+          menuItems.map((item) => (
+            <a
+              class={`item ${isActive(item.href) ? "active" : ""}`}
+              href={item.href}
+            >
+              <i class={`${item.icon} icon`} />
+              {item.label}
+            </a>
+          ))
+        }
       </div>
     </div>
 
@@ -133,17 +152,21 @@ const isActive = (href: string) => {
       <!-- ===== DESKTOP LAYOUT ===== -->
       <div class="desktop-only">
         <div class="desktop-content-wrapper">
-          <h1 class="ui header"><i class="university icon"></i>Α' Συντακτική Βουλή των Πολιτών</h1>
+          <h1 class="ui header">
+            <i class="university icon"></i>Α' Συντακτική Βουλή των Πολιτών
+          </h1>
           <div class="ui pointing menu fluid centered">
-            {menuItems.map(menuItem => (
-              <a
-                class={`item ${isActive(menuItem.href) ? 'active' : ''}`}
-                href={menuItem.href}
-              >
-                <i class={`${menuItem.icon} icon`}></i>
-                {menuItem.label}
-              </a>
-            ))}
+            {
+              menuItems.map((menuItem) => (
+                <a
+                  class={`item ${isActive(menuItem.href) ? "active" : ""}`}
+                  href={menuItem.href}
+                >
+                  <i class={`${menuItem.icon} icon`} />
+                  {menuItem.label}
+                </a>
+              ))
+            }
           </div>
         </div>
       </div>
@@ -171,62 +194,64 @@ const isActive = (href: string) => {
     </div>
 
     <script is:inline>
-      document.addEventListener('DOMContentLoaded', function() {
+      document.addEventListener("DOMContentLoaded", function () {
         function updateMobileClass() {
           if (window.innerWidth < 992) {
-            document.body.classList.add('mobile-view');
+            document.body.classList.add("mobile-view");
           } else {
-            document.body.classList.remove('mobile-view');
+            document.body.classList.remove("mobile-view");
           }
         }
 
         updateMobileClass();
-        window.addEventListener('resize', updateMobileClass);
+        window.addEventListener("resize", updateMobileClass);
 
-        const menuToggle = document.getElementById('mobile-menu-toggle');
+        const menuToggle = document.getElementById("mobile-menu-toggle");
         if (menuToggle) {
-          menuToggle.addEventListener('click', function(e) {
+          menuToggle.addEventListener("click", function (e) {
             e.preventDefault();
             e.stopPropagation();
-            $('.ui.flyout').flyout('toggle');
+            $(".ui.flyout").flyout("toggle");
           });
         }
 
-        const closeIcon = document.querySelector('#sidebar-menu .close.icon');
+        const closeIcon = document.querySelector("#sidebar-menu .close.icon");
         if (closeIcon) {
-          closeIcon.addEventListener('click', function(e) {
+          closeIcon.addEventListener("click", function (e) {
             e.preventDefault();
             e.stopPropagation();
-            $('.ui.flyout').flyout('hide');
+            $(".ui.flyout").flyout("hide");
           });
         }
 
-        document.querySelectorAll('#sidebar-menu .item:not(.header)').forEach(item => {
-          item.addEventListener('click', function() {
-            $('.ui.flyout').flyout('hide');
+        document
+          .querySelectorAll("#sidebar-menu .item:not(.header)")
+          .forEach((item) => {
+            item.addEventListener("click", function () {
+              $(".ui.flyout").flyout("hide");
+            });
           });
-        });
 
-        $('.ui.flyout').flyout({
-          context: 'body',
+        $(".ui.flyout").flyout({
+          context: "body",
           duration: 300,
-          transition: 'slide along',
-          mobileTransition: 'uncover',
-          onVisible: function() {
-            $('body').css('overflow', 'hidden');
+          transition: "slide along",
+          mobileTransition: "uncover",
+          onVisible: function () {
+            $("body").css("overflow", "hidden");
           },
-          onHide: function() {
-            $('body').css('overflow', '');
-          }
+          onHide: function () {
+            $("body").css("overflow", "");
+          },
         });
 
         function handleResize() {
           if (window.innerWidth >= 992) {
-            $('.ui.flyout').flyout('hide');
+            $(".ui.flyout").flyout("hide");
           }
         }
 
-        window.addEventListener('resize', handleResize);
+        window.addEventListener("resize", handleResize);
       });
     </script>
   </body>

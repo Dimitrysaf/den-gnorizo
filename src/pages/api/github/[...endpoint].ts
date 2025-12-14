@@ -12,7 +12,7 @@ export const GET: APIRoute = async ({ params, request }) => {
     const github = createGitHubAPI();
     const endpoint = params.endpoint || '';
     const url = new URL(request.url);
-    
+
     let data;
 
     // Route to different GitHub API methods based on the endpoint
@@ -260,8 +260,8 @@ export const GET: APIRoute = async ({ params, request }) => {
   } catch (error) {
     console.error('GitHub API error:', error);
     return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Internal server error' 
+      JSON.stringify({
+        error: error instanceof Error ? error.message : 'Internal server error'
       }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
