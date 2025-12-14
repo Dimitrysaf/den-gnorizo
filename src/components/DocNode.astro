@@ -1,0 +1,42 @@
+---
+import DocNode from "./DocNode.astro";
+
+const { node } = Astro.props;
+
+const getHeaderConfig = (type) => {
+  switch (type) {
+    case "title":
+      return { tag: "h1", label: "Τίτλος" };
+    case "chapter":
+      return { tag: "h2", label: "Κεφάλαιο" };
+    case "section":
+      return { tag: "h3", label: "Τμήμα" };
+    case "article":
+      return { tag: "h4", label: "Άρθρο" };
+    default:
+      return null;
+  }
+};
+
+const config = getHeaderConfig(node.type);
+const HeaderTag = config ? config.tag : "div";
+---
+
+{
+  config && (
+    <HeaderTag
+      class="ui header"
+      style="border: none; margin-top: 1.5em; margin-bottom: 0.5em;"
+    >
+      {config.label}&nbsp;{node.number} — {node.name}
+    </HeaderTag>
+  )
+}
+
+{
+  node.htmlContent && (
+    <div style="margin-bottom: 1em;" set:html={node.htmlContent} />
+  )
+}
+
+{node.children && node.children.map((child) => <DocNode node={child} />)}

@@ -1,9 +1,64 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Tools from "../components/Tools.astro";
+import DocNode from "../components/DocNode.astro";
+import { createGitHubAPI } from "../lib/github.fetch";
+import { marked } from "marked";
+
+const api = createGitHubAPI();
+let documentStructure = [];
+let error = null;
+
+try {
+  const rawMeta = await api.getFileContent("metadata.json");
+  const metaJson = JSON.parse(rawMeta);
+  documentStructure = metaJson.structure || [];
+
+  const nodesWithFiles = [];
+  function collectNodes(nodes) {
+    if (!nodes) return;
+    for (const node of nodes) {
+      if (node.file) nodesWithFiles.push(node);
+      if (node.children) collectNodes(node.children);
+    }
+  }
+
+  collectNodes(documentStructure);
+
+  await Promise.all(
+    nodesWithFiles.map(async (node) => {
+      try {
+        const rawMarkdown = await api.getFileContent(node.file);
+
+        const cleanMarkdown = rawMarkdown.replace(/^---[\s\S]+?---/, "").trim();
+
+        node.htmlContent = marked.parse(cleanMarkdown);
+      } catch (err) {
+        console.error(`Error loading ${node.file}`, err);
+        node.htmlContent = `<p style="color:red">Error loading file.</p>`;
+      }
+    }),
+  );
+} catch (e) {
+  console.error(e);
+  error = e.message;
+}
 ---
 
 <Layout>
   <h1 class="ui header">Αρχική</h1>
   <Tools />
+
+  {
+    error && (
+      <div class="ui negative icon message">
+        <i class="exclamation circle icon"></i>
+        <div class="content">
+          <p>{error}</p>
+        </div>
+      </div>
+    )
+  }
+
+  {documentStructure.map((node) => <DocNode node={node} />)}
 </Layout>

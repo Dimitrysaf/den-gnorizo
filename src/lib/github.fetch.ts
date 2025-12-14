@@ -120,13 +120,30 @@ class GitHubAPI {
     return this.request(`/repos/${this.config.owner}/${this.config.repo}/contents/${path}${params}`);
   }
 
+  /**
+   * Get raw file content (decoded from base64 with UTF-8 support)
+   */
   async getFileContent(path: string, ref?: string) {
     const data = await this.getContents(path, ref);
-    if (Array.isArray(data)) throw new Error('Path is a directory, not a file');
-    if (data.type !== 'file') throw new Error(`Path is a ${data.type}, not a file`);
-    if (data.encoding === 'base64' && data.content) {
-      return atob(data.content.replace(/\n/g, ''));
+
+    if (Array.isArray(data)) {
+      throw new Error('Path is a directory, not a file');
     }
+
+    if (data.type !== 'file') {
+      throw new Error(`Path is a ${data.type}, not a file`);
+    }
+
+    // Decode base64 content with UTF-8 support for Greek characters
+    if (data.encoding === 'base64' && data.content) {
+      const binaryString = atob(data.content.replace(/\n/g, ''));
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      return new TextDecoder('utf-8').decode(bytes);
+    }
+
     return data.content;
   }
 
