@@ -7,9 +7,9 @@ let error = null;
 
 try {
     const github = createGitHubAPI();
+
     branches = await github.listBranches();
 
-    // Get latest commit from the default branch
     if (branches.length > 0) {
         const commits = await github.listCommits({ per_page: 1 });
         if (commits.length > 0) {
@@ -18,13 +18,11 @@ try {
     }
 } catch (e) {
     error = e instanceof Error ? e.message : "Failed to fetch branches";
-    console.error("Error fetching branches:", error);
+    console.error("Tools.astro - Error fetching branches:", error);
 }
 
-// Generate unique ID for this instance
 const uniqueId = `tools-${Math.random().toString(36).substr(2, 9)}`;
 
-// Helper function to format date (SSR)
 function formatDate(dateString: string) {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("el-GR", {
@@ -38,16 +36,14 @@ function formatDate(dateString: string) {
 ---
 
 <div class="ui segment" data-tools-id={uniqueId}>
-    <!-- LOADER -->
     <div class="ui inverted dimmer tools-loader">
         <div class="ui text loader">Φόρτωση...</div>
     </div>
 
-    <!-- ERROR MESSAGE -->
     <div class="error-message ui negative icon message" style="display: none;">
         <i class="exclamation circle icon"></i>
         <div class="content">
-            <div class="header">Σφάλμα</div>
+            <div class="header">Σφάλμα!</div>
             <p class="error-text"></p>
         </div>
     </div>
@@ -57,7 +53,7 @@ function formatDate(dateString: string) {
             <div class="ui error icon message">
                 <i class="exclamation circle icon" />
                 <div class="content">
-                    <div class="header">Σφάλμα</div>
+                    <div class="header">Σφάλμα!</div>
                     <p>{error}</p>
                 </div>
             </div>
@@ -181,14 +177,11 @@ function formatDate(dateString: string) {
             }
         }
 
-        /* Initial hydration loader */
         setLoading(true);
         requestAnimationFrame(() => setLoading(false));
 
-        // Initialize dropdown
         $dropdown.dropdown();
 
-        // Close error message
         $errorMessage.find(".close").on("click", function () {
             $errorMessage.hide();
         });
@@ -204,7 +197,6 @@ function formatDate(dateString: string) {
             }).format(date);
         }
 
-        // Refresh
         $refreshButton.on("click", async function () {
             setLoading(true);
             $errorMessage.hide();
@@ -214,13 +206,11 @@ function formatDate(dateString: string) {
                 const branches = await res.json();
 
                 const $menu = $dropdown.find(".menu").empty();
-
                 branches.forEach((b, i) => {
                     $menu.append(
                         `<div class="item ${i === 0 ? "active selected" : ""}" data-branch="${b.name}">${b.name}</div>`,
                     );
                 });
-
                 $dropdown.find(".text").text(branches[0]?.name ?? "Κλάδοι");
                 $dropdown.dropdown("refresh");
 
@@ -231,28 +221,27 @@ function formatDate(dateString: string) {
 
                 if (commits.length > 0) {
                     const commit = commits[0];
-
                     const commitHtml = `
-            <div class="ui relaxed list">
-              <div class="item">
-                <i class="git icon"></i>
-                <div class="content">
-                  <div class="description">
-                    <strong>${commit.commit.author.name}</strong>
-                    <div style="margin-top: 0.5rem;">
-                      <i class="comment icon"></i> ${commit.commit.message}
-                    </div>
-                    <div style="margin-top: 0.5rem; color: #888;">
-                      <i class="code icon"></i> ${commit.sha.substring(0, 7)}
-                      <span style="margin-left: 1rem;">
-                        <i class="clock icon"></i> ${formatDate(commit.commit.author.date)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          `;
+                        <div class="ui relaxed list">
+                          <div class="item">
+                            <i class="git icon"></i>
+                            <div class="content">
+                              <div class="description">
+                                <strong>${commit.commit.author.name}</strong>
+                                <div style="margin-top: 0.5rem;">
+                                  <i class="comment icon"></i> ${commit.commit.message}
+                                </div>
+                                <div style="margin-top: 0.5rem; color: #888;">
+                                  <i class="code icon"></i> ${commit.sha.substring(0, 7)}
+                                  <span style="margin-left: 1rem;">
+                                    <i class="clock icon"></i> ${formatDate(commit.commit.author.date)}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                    `;
 
                     if ($latestCommit.length) {
                         $latestCommit.html(commitHtml);
@@ -264,10 +253,38 @@ function formatDate(dateString: string) {
                             );
                     }
                 }
-            } catch {
+
+                const currentTabPane = container.closest(".tab-pane");
+                const fullId = currentTabPane.attr("id");
+
+                if (fullId) {
+                    const parts = fullId.split("-");
+                    const baseId = parts.slice(2).join("-");
+
+                    const fetchUrl = new URL(window.location.href);
+                    fetchUrl.searchParams.set("refresh", "true");
+
+                    const pageRes = await fetch(fetchUrl.toString());
+                    const pageHtml = await pageRes.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(pageHtml, "text/html");
+
+                    const newContent = doc.querySelector("main").innerHTML;
+
+                    const desktopId = `#tab-desktop-${baseId}`;
+                    if ($(desktopId).length) {
+                        $(desktopId).find("main").html(newContent);
+                    }
+
+                    const mobileId = `#tab-mobile-${baseId}`;
+                    if ($(mobileId).length) {
+                        $(mobileId).find("main").html(newContent);
+                    }
+                }
+            } catch (e) {
+                console.error(e);
                 $errorText.text("Σφάλμα ανανέωσης");
                 $errorMessage.show();
-            } finally {
                 setLoading(false);
             }
         });

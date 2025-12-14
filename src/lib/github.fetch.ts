@@ -1,5 +1,4 @@
 // src/lib/github.fetch.ts
-// GitHub API utility with Memory Caching
 
 interface GitHubConfig {
   token: string;
@@ -13,9 +12,8 @@ interface GitHubApiOptions {
   headers?: Record<string, string>;
 }
 
-// CACHE CONFIGURATION
 const CACHE = new Map<string, { data: any; timestamp: number }>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 Minutes in milliseconds
+const CACHE_TTL = 5 * 60 * 1000;
 
 class GitHubAPI {
   private config: GitHubConfig;
@@ -28,18 +26,15 @@ class GitHubAPI {
   private async request(endpoint: string, options: GitHubApiOptions = {}) {
     const { method = 'GET', body, headers = {} } = options;
 
-    // 1. Generate Cache Key
     const cacheKey = `${method}:${endpoint}:${JSON.stringify(body || '')}`;
     const now = Date.now();
 
-    // 2. Check Cache (Only for GET requests)
     if (method === 'GET' && CACHE.has(cacheKey)) {
       const cached = CACHE.get(cacheKey)!;
       if (now - cached.timestamp < CACHE_TTL) {
-        // console.log(`[GitHub Cache] Serving from memory: ${endpoint}`);
         return cached.data;
       } else {
-        CACHE.delete(cacheKey); // Expired
+        CACHE.delete(cacheKey);
       }
     }
 
@@ -70,7 +65,6 @@ class GitHubAPI {
 
       const data = await response.json();
 
-      // 3. Save to Cache (Only GET requests)
       if (method === 'GET') {
         CACHE.set(cacheKey, { data, timestamp: now });
       }
@@ -120,9 +114,6 @@ class GitHubAPI {
     return this.request(`/repos/${this.config.owner}/${this.config.repo}/contents/${path}${params}`);
   }
 
-  /**
-   * Get raw file content (decoded from base64 with UTF-8 support)
-   */
   async getFileContent(path: string, ref?: string) {
     const data = await this.getContents(path, ref);
 
@@ -134,7 +125,6 @@ class GitHubAPI {
       throw new Error(`Path is a ${data.type}, not a file`);
     }
 
-    // Decode base64 content with UTF-8 support for Greek characters
     if (data.encoding === 'base64' && data.content) {
       const binaryString = atob(data.content.replace(/\n/g, ''));
       const bytes = new Uint8Array(binaryString.length);
@@ -245,6 +235,10 @@ export function createGitHubAPI(config?: Partial<GitHubConfig>) {
   if (!githubConfig.repo) throw new Error('GitHub repository is required. Set GITHUB_CONTENT_REPO in .env');
 
   return new GitHubAPI(githubConfig);
+}
+
+export function resetCache() {
+  CACHE.clear();
 }
 
 export { GitHubAPI };

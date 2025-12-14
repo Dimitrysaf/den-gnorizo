@@ -2,8 +2,12 @@
 import Layout from "../layouts/Layout.astro";
 import Tools from "../components/Tools.astro";
 import DocNode from "../components/DocNode.astro";
-import { createGitHubAPI } from "../lib/github.fetch";
+import { createGitHubAPI, resetCache } from "../lib/github.fetch"; // <--- Import resetCache
 import { marked } from "marked";
+
+if (Astro.url.searchParams.get("refresh") === "true") {
+  resetCache();
+}
 
 const api = createGitHubAPI();
 let documentStructure = [];
@@ -51,7 +55,7 @@ try {
   {
     error && (
       <div class="ui negative icon message">
-        <i class="exclamation circle icon"></i>
+        <i class="exclamation circle icon" />
         <div class="content">
           <p>{error}</p>
         </div>
