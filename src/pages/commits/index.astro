@@ -7,63 +7,138 @@ let commits = [];
 let error = null;
 
 try {
-  commits = await api.listCommits({ per_page: 30 });
+    commits = await api.listCommits({ per_page: 30, page: 1 });
 } catch (e) {
-  error = e.message;
+    error = e.message;
 }
 
 function formatDate(dateString) {
-  return new Intl.DateTimeFormat("el-GR", {
-    dateStyle: "full",
-    timeStyle: "short",
-  }).format(new Date(dateString));
+    return new Intl.DateTimeFormat("el-GR", {
+        dateStyle: "full",
+        timeStyle: "short",
+    }).format(new Date(dateString));
 }
 ---
 
 <Layout>
-  <div class="ui container">
-    <div class="ui breadcrumb" style="margin-bottom: 2rem;">
-      <a href="/" class="section">Αρχική</a>
-      <div class="divider"> / </div>
-      <div class="active section">Ιστορικό Αλλαγών</div>
+    <div class="ui container">
+        <div class="ui breadcrumb" style="margin-bottom: 2rem;">
+            <a href="/" class="section">Αρχική</a>
+            <div class="divider">/</div>
+            <div class="active section">Ιστορικό Αλλαγών</div>
+        </div>
+
+        <h1 class="ui header">Κατάλογος Αλλαγών</h1>
+        <div class="ui divider"></div>
+
+        {
+            error && (
+                <div class="ui negative message icon">
+                    <i class="exclamation triangle icon"></i>
+                    <div class="content">
+                        <div class="header">Σφάλμα!!!</div>
+                        <p>{error}</p>
+                    </div>
+                </div>
+            )
+        }
+
+        <div class="ui relaxed divided selection list" id="commits-list">
+            {
+                commits.map((commit) => (
+                    <a href={`/commits/${commit.sha}`} class="item">
+                        <i class="large git square middle aligned icon" />
+                        <div class="content">
+                            <div class="header">{commit.commit.message}</div>
+                            <div class="description">
+                                <span class="ui tiny label">
+                                    <i class="user icon" />{" "}
+                                    {commit.commit.author.name}
+                                </span>
+                                <span class="ui tiny label">
+                                    <i class="clock icon" />{" "}
+                                    {formatDate(commit.commit.author.date)}
+                                </span>
+                                <span class="ui tiny basic label">
+                                    <i class="code icon" />{" "}
+                                    {commit.sha.substring(0, 7)}
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                ))
+            }
+        </div>
+
+        <div style="margin-top: 2rem; text-align: center;">
+            <button id="load-more-btn" class="ui basic button">
+                Φόρτωση παλαιότερων
+            </button>
+        </div>
     </div>
-
-    <h2 class="ui header">
-      <i class="history icon"></i>
-      <div class="content">
-        Ιστορικό Αλλαγών
-        <div class="sub header">Οι τελευταίες 30 αλλαγές στο αποθετήριο</div>
-      </div>
-    </h2>
-    <div class="ui divider"></div>
-
-    {error && (
-      <div class="ui negative message">
-        <div class="header">Σφάλμα</div>
-        <p>{error}</p>
-      </div>
-    )}
-
-    <div class="ui relaxed divided selection list">
-      {commits.map((commit) => (
-        <a href={`/commits/${commit.sha}`} class="item">
-          <i class="large git square middle aligned icon"></i>
-          <div class="content">
-            <div class="header">{commit.commit.message}</div>
-            <div class="description">
-              <span class="ui tiny label">
-                <i class="user icon"></i> {commit.commit.author.name}
-              </span>
-              <span class="ui tiny label">
-                <i class="clock icon"></i> {formatDate(commit.commit.author.date)}
-              </span>
-              <span class="ui tiny basic label">
-                <i class="code icon"></i> {commit.sha.substring(0, 7)}
-              </span>
-            </div>
-          </div>
-        </a>
-      ))}
-    </div>
-  </div>
 </Layout>
+
+<script is:inline>
+    $(function () {
+        let page = 1;
+        const $btn = $("#load-more-btn");
+        const $list = $("#commits-list");
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return new Intl.DateTimeFormat("el-GR", {
+                dateStyle: "full",
+                timeStyle: "short",
+            }).format(date);
+        }
+
+        $btn.on("click", async function () {
+            $btn.addClass("loading disabled");
+            page++;
+
+            try {
+                const res = await fetch(
+                    `/api/github/commits?per_page=30&page=${page}`,
+                );
+                const newCommits = await res.json();
+
+                if (newCommits.length === 0) {
+                    $btn.text("Δεν υπάρχουν άλλες αλλαγές")
+                        .addClass("disabled")
+                        .removeClass("loading");
+                    return;
+                }
+
+                newCommits.forEach((commit) => {
+                    const html = `
+            <a href="/commits/${commit.sha}" class="item" style="display:none">
+              <i class="large git square middle aligned icon"></i>
+              <div class="content">
+                <div class="header">${commit.commit.message}</div>
+                <div class="description">
+                  <span class="ui tiny label">
+                    <i class="user icon"></i> ${commit.commit.author.name}
+                  </span>
+                  <span class="ui tiny label">
+                    <i class="clock icon"></i> ${formatDate(commit.commit.author.date)}
+                  </span>
+                  <span class="ui tiny basic label">
+                    <i class="code icon"></i> ${commit.sha.substring(0, 7)}
+                  </span>
+                </div>
+              </div>
+            </a>
+          `;
+                    const $el = $(html);
+                    $list.append($el);
+                    $el.fadeIn();
+                });
+            } catch (err) {
+                console.error(err);
+                alert("Σφάλμα φόρτωσης");
+            } finally {
+                $btn.removeClass("loading disabled");
+            }
+        });
+    });
+</script>

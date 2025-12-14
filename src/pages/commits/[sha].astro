@@ -9,104 +9,154 @@ let commitData = null;
 let error = null;
 
 try {
-  if (sha) {
-    commitData = await api.getCommit(sha);
-  }
+    if (sha) {
+        commitData = await api.getCommit(sha);
+    }
 } catch (e) {
-  error = e.message;
+    error = e.message;
 }
 
 function formatDate(dateString) {
-  return new Intl.DateTimeFormat("el-GR", {
-    dateStyle: "full",
-    timeStyle: "short",
-  }).format(new Date(dateString));
+    return new Intl.DateTimeFormat("el-GR", {
+        dateStyle: "full",
+        timeStyle: "short",
+    }).format(new Date(dateString));
 }
 ---
 
 <Layout>
-  <div class="ui container">
-    
-    <div class="ui breadcrumb" style="margin-bottom: 2rem;">
-      <a href="/" class="section">Αρχική</a>
-      <div class="divider"> / </div>
-      <a href="/commits" class="section">Ιστορικό</a>
-      <div class="divider"> / </div>
-      <div class="active section">{sha ? sha.substring(0, 7) : 'Λεπτομέρειες'}</div>
-    </div>
-
-    {error && (
-      <div class="ui negative message">
-        <div class="header">Σφάλμα</div>
-        <p>{error}</p>
-      </div>
-    )}
-
-    {commitData && (
-      <div>
-        <div class="ui segment">
-            <h2 class="ui header">
-                {commitData.commit.message}
-            </h2>
-            <div class="ui list">
-                <div class="item">
-                    <i class="user icon"></i> 
-                    <strong>Συγγραφέας:</strong> {commitData.commit.author.name}
-                </div>
-                <div class="item">
-                    <i class="calendar icon"></i>
-                    <strong>Ημερομηνία:</strong> {formatDate(commitData.commit.author.date)}
-                </div>
-                <div class="item">
-                    <i class="code icon"></i>
-                    <strong>SHA:</strong> {commitData.sha}
-                </div>
-            </div>
-            
-            <div class="ui stats">
-                <div class="ui green stat">
-                    <div class="value">{commitData.stats.additions}</div>
-                    <div class="label">Προσθήκες</div>
-                </div>
-                <div class="ui red stat">
-                    <div class="value">{commitData.stats.deletions}</div>
-                    <div class="label">Διαγραφές</div>
-                </div>
-                <div class="ui grey stat">
-                    <div class="value">{commitData.files.length}</div>
-                    <div class="label">Αρχεία</div>
-                </div>
+    <div class="ui container">
+        <div class="ui breadcrumb" style="margin-bottom: 2rem;">
+            <a href="/" class="section">Αρχική</a>
+            <div class="divider">/</div>
+            <a href="/commits" class="section">Ιστορικό</a>
+            <div class="divider">/</div>
+            <div class="active section">
+                {sha ? sha.substring(0, 7) : "Λεπτομέρειες"}
             </div>
         </div>
 
-        <h3 class="ui header">Αλλαγές Αρχείων</h3>
+        {
+            error && (
+                <div class="ui negative message">
+                    <i class="exclamation circle icon" />
+                    <div class="content">
+                        <div class="header">Σφάλμα!</div>
+                        <p>{error}</p>
+                    </div>
+                </div>
+            )
+        }
 
-        <div class="ui segments">
-            {commitData.files.map((file) => (
-                <div class="ui segment">
-                    <div class="ui top attached label">
-                        <i class="file outline icon"></i> {file.filename}
-                        <div class="detail" style="float: right;">
-                            <span class="ui green text">+{file.additions}</span> / 
-                            <span class="ui red text">-{file.deletions}</span>
+        {
+            commitData && (
+                <div>
+                    <div class="ui segment">
+                        <h2 class="ui header">{commitData.commit.message}</h2>
+
+                        <div class="ui divider" />
+
+                        <div class="ui stackable grid">
+                            <div class="ten wide column">
+                                <div class="ui relaxed list">
+                                    <div class="item">
+                                        <i class="user icon" />
+                                        <div class="content">
+                                            <div class="header">Συγγραφέας</div>
+                                            <div class="description">
+                                                {commitData.commit.author.name}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="item">
+                                        <i class="calendar icon" />
+                                        <div class="content">
+                                            <div class="header">Ημερομηνία</div>
+                                            <div class="description">
+                                                {formatDate(
+                                                    commitData.commit.author
+                                                        .date,
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="item">
+                                        <i class="code icon" />
+                                        <div class="content">
+                                            <div class="header">SHA</div>
+                                            <div class="description">
+                                                {commitData.sha}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="six wide column">
+                                <div class="ui tiny statistics">
+                                    <div class="green statistic">
+                                        <div class="value">
+                                            {commitData.stats.additions}
+                                        </div>
+                                        <div class="label">Προσθήκες</div>
+                                    </div>
+                                    <div class="red statistic">
+                                        <div class="value">
+                                            {commitData.stats.deletions}
+                                        </div>
+                                        <div class="label">Διαγραφές</div>
+                                    </div>
+                                    <div class="grey statistic">
+                                        <div class="value">
+                                            {commitData.files.length}
+                                        </div>
+                                        <div class="label">Αρχεία</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="code-view" style="margin-top: 1em;">
-                        {file.patch ? (
-                            <pre><code class="diff">{file.patch}</code></pre>
-                        ) : (
-                            <div class="ui ignored message">
-                                Το αρχείο είναι δυαδικό ή πολύ μεγάλο για προβολή.
+
+                    <h3 class="ui header">Αλλαγές Αρχείων</h3>
+
+                    <div class="ui segments">
+                        {commitData.files.map((file) => (
+                            <div class="ui segment">
+                                <div class="ui top attached label">
+                                    <i class="file outline icon" />{" "}
+                                    {file.filename}
+                                    <div class="detail" style="float: right;">
+                                        <span class="ui green text">
+                                            +{file.additions}
+                                        </span>{" "}
+                                        /
+                                        <span class="ui red text">
+                                            -{file.deletions}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="code-view" style="margin-top: 1em;">
+                                    {file.patch ? (
+                                        <pre>
+                                            <code class="diff">
+                                                {file.patch}
+                                            </code>
+                                        </pre>
+                                    ) : (
+                                        <div class="ui ignored message">
+                                            Το αρχείο είναι δυαδικό ή πολύ
+                                            μεγάλο για προβολή.
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        )}
+                        ))}
                     </div>
                 </div>
-            ))}
-        </div>
-      </div>
-    )}
-  </div>
+            )
+        }
+    </div>
 </Layout>
 
 <style>
@@ -116,7 +166,7 @@ function formatDate(dateString) {
         border-radius: 4px;
         overflow-x: auto;
         border: 1px solid #e9ecef;
-        font-family: 'Courier New', Courier, monospace;
+        font-family: "Courier New", Courier, monospace;
         font-size: 0.85em;
     }
 </style>
