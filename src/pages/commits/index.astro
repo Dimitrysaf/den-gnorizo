@@ -1,0 +1,69 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { createGitHubAPI } from "../../lib/github.fetch";
+
+const api = createGitHubAPI();
+let commits = [];
+let error = null;
+
+try {
+  commits = await api.listCommits({ per_page: 30 });
+} catch (e) {
+  error = e.message;
+}
+
+function formatDate(dateString) {
+  return new Intl.DateTimeFormat("el-GR", {
+    dateStyle: "full",
+    timeStyle: "short",
+  }).format(new Date(dateString));
+}
+---
+
+<Layout>
+  <div class="ui container">
+    <div class="ui breadcrumb" style="margin-bottom: 2rem;">
+      <a href="/" class="section">Αρχική</a>
+      <div class="divider"> / </div>
+      <div class="active section">Ιστορικό Αλλαγών</div>
+    </div>
+
+    <h2 class="ui header">
+      <i class="history icon"></i>
+      <div class="content">
+        Ιστορικό Αλλαγών
+        <div class="sub header">Οι τελευταίες 30 αλλαγές στο αποθετήριο</div>
+      </div>
+    </h2>
+    <div class="ui divider"></div>
+
+    {error && (
+      <div class="ui negative message">
+        <div class="header">Σφάλμα</div>
+        <p>{error}</p>
+      </div>
+    )}
+
+    <div class="ui relaxed divided selection list">
+      {commits.map((commit) => (
+        <a href={`/commits/${commit.sha}`} class="item">
+          <i class="large git square middle aligned icon"></i>
+          <div class="content">
+            <div class="header">{commit.commit.message}</div>
+            <div class="description">
+              <span class="ui tiny label">
+                <i class="user icon"></i> {commit.commit.author.name}
+              </span>
+              <span class="ui tiny label">
+                <i class="clock icon"></i> {formatDate(commit.commit.author.date)}
+              </span>
+              <span class="ui tiny basic label">
+                <i class="code icon"></i> {commit.sha.substring(0, 7)}
+              </span>
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+</Layout>

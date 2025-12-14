@@ -3,7 +3,12 @@ import "fomantic-ui-css/semantic.min.css";
 
 const menuItems = [
   { href: "/", label: "Αρχική", icon: "home", id: "home" },
-  { href: "/discussion", label: "Συζήτηση", icon: "comments", id: "discussion" },
+  {
+    href: "/discussion",
+    label: "Συζήτηση",
+    icon: "comments",
+    id: "discussion",
+  },
   { href: "/prs", label: "Προτάσεις", icon: "file alternate", id: "prs" },
   { href: "/issues", label: "Αναφορές", icon: "bug", id: "issues" },
   { href: "/settings", label: "Ρυθμίσεις", icon: "cog", id: "settings" },
@@ -14,8 +19,15 @@ const currentPath = Astro.url.pathname;
 
 const getCurrentId = () => {
   if (currentPath === "/") return "home";
-  const item = menuItems.find(i => i.href === currentPath || (i.href !== "/" && currentPath.startsWith(i.href)));
-  return item ? item.id : "home";
+
+  const item = menuItems.find(
+    (i) =>
+      i.href === currentPath ||
+      (i.href !== "/" && currentPath.startsWith(i.href)),
+  );
+  if (item) return item.id;
+
+  return currentPath.substring(1).replace(/\//g, "-");
 };
 
 const initialId = getCurrentId();
@@ -43,12 +55,21 @@ const isActive = (href: string) => {
       src="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.3/semantic.min.js"
     ></script>
     <style>
-      .desktop-only { display: none; }
-      .mobile-only { display: block; }
+      .desktop-only {
+        display: none;
+      }
+      .mobile-only {
+        display: block;
+      }
 
       @media (min-width: 992px) {
-        .desktop-only { display: block; background-color: white; }
-        .mobile-only { display: none; }
+        .desktop-only {
+          display: block;
+          background-color: white;
+        }
+        .mobile-only {
+          display: none;
+        }
       }
 
       body.mobile-view {
@@ -64,7 +85,9 @@ const isActive = (href: string) => {
         background-color: white;
       }
 
-      .desktop-only .ui.pointing.menu { background-color: white; }
+      .desktop-only .ui.pointing.menu {
+        background-color: white;
+      }
 
       #sidebar-menu .header.item {
         padding: 1.5rem 1rem !important;
@@ -87,10 +110,14 @@ const isActive = (href: string) => {
         z-index: 1;
       }
 
-      .ui.container { padding: 2rem 1rem; }
+      .ui.container {
+        padding: 2rem 1rem;
+      }
 
       @media (max-width: 991px) {
-        .ui.container { margin-top: 1rem; }
+        .ui.container {
+          margin-top: 1rem;
+        }
       }
 
       .tab-pane {
@@ -103,14 +130,19 @@ const isActive = (href: string) => {
 
       #tab-loader {
         position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(255,255,255,0.7);
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.7);
         z-index: 9999;
         display: none;
         align-items: center;
         justify-content: center;
       }
-      #tab-loader.visible { display: flex; }
+      #tab-loader.visible {
+        display: flex;
+      }
     </style>
   </head>
 
@@ -119,50 +151,74 @@ const isActive = (href: string) => {
       <div class="ui active large text loader">Φόρτωση...</div>
     </div>
 
-    <div class="ui left vertical inverted menu flyout mobile-only" id="sidebar-menu">
+    <div
+      class="ui left vertical inverted menu flyout mobile-only"
+      id="sidebar-menu"
+    >
       <i class="close icon"></i>
       <div class="header item">
-        <h2 class="ui header"><i class="bars icon"></i>Πλοήγηση</h2>
+        <h2 class="ui header"><i class="bars icon"></i> Πλοήγηση</h2>
       </div>
       <div class="scrolling content">
-        {menuItems.map((item) => (
-            <a class={`item nav-link ${isActive(item.href) ? "active" : ""}`} href={item.href} data-tab-id={item.id}>
+        {
+          menuItems.map((item) => (
+            <a
+              class={`item nav-link ${isActive(item.href) ? "active" : ""}`}
+              href={item.href}
+              data-tab-id={item.id}
+            >
               <i class={`${item.icon} icon`} />
               {item.label}
             </a>
-          ))}
+          ))
+        }
       </div>
     </div>
 
     <div class="pusher">
       <div class="mobile-only">
         <div class="ui top fixed menu">
-          <a class="item" id="mobile-menu-toggle"><i class="bars icon"></i>Μενού</a>
-          <div class="item"><i class="university icon"></i>Α' Συντακτική Βουλή</div>
+          <a class="item" id="mobile-menu-toggle"
+            ><i class="bars icon"></i> Μενού</a
+          >
+          <div class="item">
+            <i class="university icon"></i>Α' Συντακτική Βουλή των Πολιτών
+          </div>
         </div>
       </div>
 
       <div class="desktop-only">
         <div class="desktop-content-wrapper">
-          <h1 class="ui header"><i class="university icon"></i>Α' Συντακτική Βουλή των Πολιτών</h1>
+          <h1 class="ui header">
+            <i class="university icon"></i>Α' Συντακτική Βουλή των Πολιτών
+          </h1>
           <div class="ui pointing menu fluid centered">
-            {menuItems.map((menuItem) => (
-                <a class={`item nav-link ${isActive(menuItem.href) ? "active" : ""}`} href={menuItem.href} data-tab-id={menuItem.id}>
+            {
+              menuItems.map((menuItem) => (
+                <a
+                  class={`item nav-link ${isActive(menuItem.href) ? "active" : ""}`}
+                  href={menuItem.href}
+                  data-tab-id={menuItem.id}
+                >
                   <i class={`${menuItem.icon} icon`} />
                   {menuItem.label}
                 </a>
-              ))}
+              ))
+            }
           </div>
         </div>
       </div>
 
       <div class="full height">
-
         <div class="desktop-only">
           <div class="desktop-content-wrapper">
             <div class="ui segment content-container">
-              <div id={`tab-desktop-${initialId}`} class="tab-pane initial-visible" data-loaded="true">
-                 <main><slot /></main>
+              <div
+                id={`tab-desktop-${initialId}`}
+                class="tab-pane initial-visible"
+                data-loaded="true"
+              >
+                <main><slot /></main>
               </div>
             </div>
           </div>
@@ -170,105 +226,107 @@ const isActive = (href: string) => {
 
         <div class="mobile-only">
           <div class="ui container content-container">
-              <div id={`tab-mobile-${initialId}`} class="tab-pane initial-visible" data-loaded="true">
-                <main><slot /></main>
-             </div>
+            <div
+              id={`tab-mobile-${initialId}`}
+              class="tab-pane initial-visible"
+              data-loaded="true"
+            >
+              <main><slot /></main>
+            </div>
           </div>
         </div>
-
       </div>
     </div>
 
     <script is:inline define:vars={{ initialId }}>
       document.addEventListener("DOMContentLoaded", function () {
-
         let currentActiveTabId = initialId;
 
-        $('.nav-link').on('click', function(e) {
-            e.preventDefault();
-            const url = $(this).attr('href');
-            const tabId = $(this).data('tab-id');
+        $(".nav-link").on("click", function (e) {
+          e.preventDefault();
+          const url = $(this).attr("href");
+          const tabId = $(this).data("tab-id");
 
-            currentActiveTabId = tabId;
+          currentActiveTabId = tabId;
 
-            $('.nav-link').removeClass('active');
-            $(`.nav-link[href="${url}"]`).addClass('active');
+          $(".nav-link").removeClass("active");
+          $(`.nav-link[href="${url}"]`).addClass("active");
 
-            $(".ui.flyout").flyout("hide");
+          $(".ui.flyout").flyout("hide");
 
-            switchTab(tabId, url);
+          switchTab(tabId, url);
         });
 
         function switchTab(tabId, url) {
-            const desktopTabId = `tab-desktop-${tabId}`;
-            const mobileTabId = `tab-mobile-${tabId}`;
+          const desktopTabId = `tab-desktop-${tabId}`;
+          const mobileTabId = `tab-mobile-${tabId}`;
 
-            const desktopExists = $(`#${desktopTabId}`).length > 0;
+          const desktopExists = $(`#${desktopTabId}`).length > 0;
 
-            if (desktopExists) {
-                $('.content-container > .tab-pane').hide();
+          if (desktopExists) {
+            $(".content-container > .tab-pane").hide();
 
-                $(`#${desktopTabId}`).show();
-                $(`#${mobileTabId}`).show();
+            $(`#${desktopTabId}`).show();
+            $(`#${mobileTabId}`).show();
 
-                window.history.pushState({ tabId: tabId }, "", url);
-                $('#tab-loader').removeClass('visible');
-            } else {
-                fetchAndRender(tabId, url);
-            }
+            window.history.pushState({ tabId: tabId }, "", url);
+            $("#tab-loader").removeClass("visible");
+          } else {
+            fetchAndRender(tabId, url);
+          }
         }
 
         function fetchAndRender(tabId, url) {
-            if(currentActiveTabId === tabId) {
-                $('#tab-loader').addClass('visible');
-            }
+          if (currentActiveTabId === tabId) {
+            $("#tab-loader").addClass("visible");
+          }
 
-            $.ajax({
-                url: url,
-                method: 'GET',
-                success: function(response) {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(response, 'text/html');
-                    const newContent = doc.querySelector('main').innerHTML;
+          $.ajax({
+            url: url,
+            method: "GET",
+            success: function (response) {
+              const parser = new DOMParser();
+              const doc = parser.parseFromString(response, "text/html");
+              const newContent = doc.querySelector("main").innerHTML;
 
-                    const newDesktopTab = `
+              const newDesktopTab = `
                         <div id="tab-desktop-${tabId}" class="tab-pane" style="display: none;" data-loaded="true">
                             <main>${newContent}</main>
                         </div>
                     `;
-                    const newMobileTab = `
+              const newMobileTab = `
                         <div id="tab-mobile-${tabId}" class="tab-pane" style="display: none;" data-loaded="true">
                             <main>${newContent}</main>
                         </div>
                     `;
 
-                    $('.desktop-only .content-container').append(newDesktopTab);
-                    $('.mobile-only .content-container').append(newMobileTab);
+              $(".desktop-only .content-container").append(newDesktopTab);
+              $(".mobile-only .content-container").append(newMobileTab);
 
-                    if (currentActiveTabId === tabId) {
-                        $('.content-container > .tab-pane').hide();
+              if (currentActiveTabId === tabId) {
+                $(".content-container > .tab-pane").hide();
 
-                        $(`#tab-desktop-${tabId}`).show();
-                        $(`#tab-mobile-${tabId}`).show();
+                $(`#tab-desktop-${tabId}`).show();
+                $(`#tab-mobile-${tabId}`).show();
 
-                        window.history.pushState({ tabId: tabId }, "", url);
-                        $('#tab-loader').removeClass('visible');
-                    } else {
-                        console.log(`Background loaded: ${tabId}, kept hidden.`);
-                    }
-                },
-                error: function(err) {
-                    if (currentActiveTabId === tabId) {
-                        console.error("Fetch error", err);
-                        alert("Σφάλμα φόρτωσης σελίδας");
-                        $('#tab-loader').removeClass('visible');
-                    }
-                }
-            });
+                window.history.pushState({ tabId: tabId }, "", url);
+                $("#tab-loader").removeClass("visible");
+              } else {
+                console.log(`Background loaded: ${tabId}, kept hidden.`);
+              }
+            },
+            error: function (err) {
+              if (currentActiveTabId === tabId) {
+                console.error("Fetch error", err);
+                alert("Σφάλμα φόρτωσης σελίδας");
+                $("#tab-loader").removeClass("visible");
+              }
+            },
+          });
         }
 
-        window.onpopstate = function(event) {
-             location.reload();
+        window.onpopstate = function (event) {
+          location.reload();
         };
 
         function updateMobileClass() {
@@ -304,12 +362,18 @@ const isActive = (href: string) => {
           duration: 300,
           transition: "slide along",
           mobileTransition: "uncover",
-          onVisible: function () { $("body").css("overflow", "hidden"); },
-          onHide: function () { $("body").css("overflow", ""); },
+          onVisible: function () {
+            $("body").css("overflow", "hidden");
+          },
+          onHide: function () {
+            $("body").css("overflow", "");
+          },
         });
 
         function handleResize() {
-          if (window.innerWidth >= 992) { $(".ui.flyout").flyout("hide"); }
+          if (window.innerWidth >= 992) {
+            $(".ui.flyout").flyout("hide");
+          }
         }
         window.addEventListener("resize", handleResize);
       });

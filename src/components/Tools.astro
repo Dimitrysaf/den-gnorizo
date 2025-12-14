@@ -7,7 +7,6 @@ let error = null;
 
 try {
     const github = createGitHubAPI();
-
     branches = await github.listBranches();
 
     if (branches.length > 0) {
@@ -95,9 +94,10 @@ function formatDate(dateString: string) {
                 </div>
 
                 {latestCommit && (
-                    <div
-                        class="ui secondary segment latest-commit"
-                        style="margin-top: 1rem;"
+                    <a
+                        href="/commits"
+                        class="ui secondary segment latest-commit link-segment"
+                        style="margin-top: 1rem; display: block; color: inherit;"
                     >
                         <div class="ui relaxed list">
                             <div class="item">
@@ -126,7 +126,7 @@ function formatDate(dateString: string) {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </a>
                 )}
             </div>
         )
@@ -137,6 +137,11 @@ function formatDate(dateString: string) {
     .tools-buttons {
         display: flex;
         gap: 0.5rem;
+    }
+
+    .link-segment:hover {
+        background-color: #f0f0f0 !important;
+        border: 1px solid #ccc !important;
     }
 
     @media (max-width: 768px) {
@@ -151,11 +156,6 @@ function formatDate(dateString: string) {
 
     .latest-commit {
         font-size: 0.9rem;
-    }
-
-    .latest-commit .header {
-        font-size: 1rem;
-        margin-bottom: 0.5rem;
     }
 </style>
 
@@ -249,7 +249,7 @@ function formatDate(dateString: string) {
                         container
                             .find(".tools-buttons")
                             .after(
-                                `<div class="ui secondary segment latest-commit" style="margin-top: 1rem;">${commitHtml}</div>`,
+                                `<a href="/commits" class="ui secondary segment latest-commit link-segment" style="margin-top: 1rem; display: block; color: inherit;">${commitHtml}</a>`,
                             );
                     }
                 }
