@@ -34,7 +34,7 @@ function formatDate(dateString) {
         {
             error && (
                 <div class="ui negative message icon">
-                    <i class="exclamation triangle icon"></i>
+                    <i class="exclamation triangle icon" />
                     <div class="content">
                         <div class="header">Σφάλμα!!!</div>
                         <p>{error}</p>
@@ -49,8 +49,10 @@ function formatDate(dateString) {
                     <a href={`/commits/${commit.sha}`} class="item">
                         <i class="large git square middle aligned icon" />
                         <div class="content">
-                            <div class="header">{commit.commit.message}</div>
-                            <div class="description">
+                            <div class="header" style="margin-bottom: 0.3em;">
+                                {commit.commit.message}
+                            </div>
+                            <div class="description label-container">
                                 <span class="ui tiny label">
                                     <i class="user icon" />{" "}
                                     {commit.commit.author.name}
@@ -77,6 +79,30 @@ function formatDate(dateString) {
         </div>
     </div>
 </Layout>
+
+<style>
+    .label-container .ui.label {
+        margin-bottom: 0.5em;
+        margin-right: 0.5em;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    @media (max-width: 767px) {
+        .ui.relaxed.list .item {
+            padding-top: 1em;
+            padding-bottom: 1em;
+        }
+
+        .ui.relaxed.list .item > i.large.icon {
+            display: none;
+        }
+
+        .ui.relaxed.list .item > .content {
+            padding-left: 0;
+        }
+    }
+</style>
 
 <script is:inline>
     $(function () {
@@ -111,24 +137,24 @@ function formatDate(dateString) {
 
                 newCommits.forEach((commit) => {
                     const html = `
-            <a href="/commits/${commit.sha}" class="item" style="display:none">
-              <i class="large git square middle aligned icon"></i>
-              <div class="content">
-                <div class="header">${commit.commit.message}</div>
-                <div class="description">
-                  <span class="ui tiny label">
-                    <i class="user icon"></i> ${commit.commit.author.name}
-                  </span>
-                  <span class="ui tiny label">
-                    <i class="clock icon"></i> ${formatDate(commit.commit.author.date)}
-                  </span>
-                  <span class="ui tiny basic label">
-                    <i class="code icon"></i> ${commit.sha.substring(0, 7)}
-                  </span>
-                </div>
-              </div>
-            </a>
-          `;
+                        <a href="/commits/${commit.sha}" class="item" style="display:none">
+                        <i class="large git square middle aligned icon"></i>
+                        <div class="content">
+                            <div class="header" style="margin-bottom: 0.3em;">${commit.commit.message}</div>
+                            <div class="description label-container">
+                            <span class="ui tiny label">
+                                <i class="user icon"></i> ${commit.commit.author.name}
+                            </span>
+                            <span class="ui tiny label">
+                                <i class="clock icon"></i> ${formatDate(commit.commit.author.date)}
+                            </span>
+                            <span class="ui tiny basic label">
+                                <i class="code icon"></i> ${commit.sha.substring(0, 7)}
+                            </span>
+                            </div>
+                        </div>
+                        </a>
+                    `;
                     const $el = $(html);
                     $list.append($el);
                     $el.fadeIn();
