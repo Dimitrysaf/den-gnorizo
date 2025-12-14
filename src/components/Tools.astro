@@ -1,0 +1,270 @@
+---
+import { createGitHubAPI } from "../lib/github.fetch";
+
+let branches = [];
+let latestCommit = null;
+let error = null;
+
+try {
+    const github = createGitHubAPI();
+    branches = await github.listBranches();
+
+    // Get latest commit from the default branch
+    if (branches.length > 0) {
+        const commits = await github.listCommits({ per_page: 1 });
+        if (commits.length > 0) {
+            latestCommit = commits[0];
+        }
+    }
+} catch (e) {
+    error = e instanceof Error ? e.message : "Failed to fetch branches";
+    console.error("Error fetching branches:", error);
+}
+
+// Generate unique ID for this instance
+const uniqueId = `tools-${Math.random().toString(36).substr(2, 9)}`;
+
+// Helper function to format date (SSR)
+function formatDate(dateString: string) {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("el-GR", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    }).format(date);
+}
+---
+
+<div class="ui segment" data-tools-id={uniqueId}>
+    <!-- LOADER -->
+    <div class="ui inverted dimmer tools-loader">
+        <div class="ui text loader">Φώρτοση</div>
+    </div>
+
+    <!-- ERROR MESSAGE -->
+    <div class="error-message ui negative message" style="display: none;">
+        <i class="close icon"></i>
+        <div class="header">Σφάλμα</div>
+        <p class="error-text"></p>
+    </div>
+
+    {
+        error ? (
+            <div class="ui error message">
+                <div class="header">Σφάλμα</div>
+                <p>{error}</p>
+            </div>
+        ) : (
+            <div>
+                <div class="tools-buttons">
+                    <div class="ui labeled icon button compact dropdown branch-dropdown">
+                        <i class="code branch icon" />
+                        <span class="text">
+                            {branches.length > 0 ? branches[0].name : "Κλάδοι"}
+                        </span>
+                        <div class="menu">
+                            {branches.length === 0 ? (
+                                <div class="item disabled">
+                                    Δεν βρέθηκαν κλάδοι
+                                </div>
+                            ) : (
+                                branches.map((branch: any, index: number) => (
+                                    <div
+                                        class={`item ${index === 0 ? "active selected" : ""}`}
+                                        data-branch={branch.name}
+                                    >
+                                        {branch.name}
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+
+                    <button
+                        class="ui icon button compact refresh-button labeled"
+                        type="button"
+                        title="Ανανέωση"
+                        style="text-align: left;"
+                    >
+                        <i class="refresh icon" />
+                        <span>Ανανέωση</span>
+                    </button>
+                </div>
+
+                {latestCommit && (
+                    <div
+                        class="ui secondary segment latest-commit"
+                        style="margin-top: 1rem;"
+                    >
+                        <div class="ui relaxed list">
+                            <div class="item">
+                                <i class="git icon" />
+                                <div class="content">
+                                    <div class="description">
+                                        <strong>
+                                            {latestCommit.commit.author.name}
+                                        </strong>
+                                        <div style="margin-top: 0.5rem;">
+                                            <i class="comment icon" />{" "}
+                                            {latestCommit.commit.message}
+                                        </div>
+                                        <div style="margin-top: 0.5rem; color: #888;">
+                                            <i class="code icon" />{" "}
+                                            {latestCommit.sha.substring(0, 7)}
+                                            <span style="margin-left: 1rem;">
+                                                <i class="clock icon" />{" "}
+                                                {formatDate(
+                                                    latestCommit.commit.author
+                                                        .date,
+                                                )}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        )
+    }
+</div>
+
+<style>
+    .tools-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .tools-buttons {
+            flex-direction: column;
+        }
+
+        .tools-buttons > * {
+            width: 100%;
+        }
+    }
+
+    .latest-commit {
+        font-size: 0.9rem;
+    }
+
+    .latest-commit .header {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+</style>
+
+<script is:inline define:vars={{ uniqueId }}>
+    $(function () {
+        const container = $(`[data-tools-id="${uniqueId}"]`);
+        const $loader = container.find(".tools-loader");
+        const $dropdown = container.find(".branch-dropdown");
+        const $errorMessage = container.find(".error-message");
+        const $errorText = container.find(".error-text");
+        const $refreshButton = container.find(".refresh-button");
+        const $latestCommit = container.find(".latest-commit");
+
+        function setLoading(state) {
+            if (state) {
+                $loader.addClass("active");
+            } else {
+                $loader.removeClass("active");
+            }
+        }
+
+        /* Initial hydration loader */
+        setLoading(true);
+        requestAnimationFrame(() => setLoading(false));
+
+        // Initialize dropdown
+        $dropdown.dropdown();
+
+        // Close error message
+        $errorMessage.find(".close").on("click", function () {
+            $errorMessage.hide();
+        });
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return new Intl.DateTimeFormat("el-GR", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+            }).format(date);
+        }
+
+        // Refresh
+        $refreshButton.on("click", async function () {
+            setLoading(true);
+            $errorMessage.hide();
+
+            try {
+                const res = await fetch("/api/github/branches");
+                const branches = await res.json();
+
+                const $menu = $dropdown.find(".menu").empty();
+
+                branches.forEach((b, i) => {
+                    $menu.append(
+                        `<div class="item ${i === 0 ? "active selected" : ""}" data-branch="${b.name}">${b.name}</div>`,
+                    );
+                });
+
+                $dropdown.find(".text").text(branches[0]?.name ?? "Κλάδοι");
+                $dropdown.dropdown("refresh");
+
+                const commitsRes = await fetch(
+                    "/api/github/commits?per_page=1",
+                );
+                const commits = await commitsRes.json();
+
+                if (commits.length > 0) {
+                    const commit = commits[0];
+
+                    const commitHtml = `
+            <div class="ui relaxed list">
+              <div class="item">
+                <i class="git icon"></i>
+                <div class="content">
+                  <div class="description">
+                    <strong>${commit.commit.author.name}</strong>
+                    <div style="margin-top: 0.5rem;">
+                      <i class="comment icon"></i> ${commit.commit.message}
+                    </div>
+                    <div style="margin-top: 0.5rem; color: #888;">
+                      <i class="code icon"></i> ${commit.sha.substring(0, 7)}
+                      <span style="margin-left: 1rem;">
+                        <i class="clock icon"></i> ${formatDate(commit.commit.author.date)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+
+                    if ($latestCommit.length) {
+                        $latestCommit.html(commitHtml);
+                    } else {
+                        container
+                            .find(".tools-buttons")
+                            .after(
+                                `<div class="ui secondary segment latest-commit" style="margin-top: 1rem;">${commitHtml}</div>`,
+                            );
+                    }
+                }
+            } catch {
+                $errorText.text("Σφάλμα ανανέωσης");
+                $errorMessage.show();
+            } finally {
+                setLoading(false);
+            }
+        });
+    });
+</script>

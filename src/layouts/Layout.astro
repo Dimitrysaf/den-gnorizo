@@ -23,17 +23,13 @@ const isActive = (href: string) => {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Α΄ Συντακτική Βουλή των Πολιτών</title>
-    <!-- Load jQuery first -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-    <!-- Then load Fomantic UI CSS and JS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.3/semantic.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.3/semantic.min.js"></script>
     <style>
-      /* Mobile first - hide desktop by default */
       .desktop-only { display: none; }
       .mobile-only { display: block; }
 
-      /* Desktop styles - show desktop, hide mobile */
       @media (min-width: 992px) {
         .desktop-only {
           display: block;
@@ -42,14 +38,12 @@ const isActive = (href: string) => {
         .mobile-only { display: none; }
       }
 
-      /* Mobile fixed menu spacing - push content down */
       body.mobile-view {
         padding-top: 3.5rem;
         margin-top: 1rem;
         background-color: white;
       }
 
-      /* Desktop container max-width for readability */
       .desktop-content-wrapper {
         max-width: 900px;
         margin: 0 auto;
@@ -57,12 +51,10 @@ const isActive = (href: string) => {
         background-color: white;
       }
 
-      /* Ensure desktop menu has white background */
       .desktop-only .ui.pointing.menu {
         background-color: white;
       }
 
-      /* Mobile flyout header styling */
       #sidebar-menu .header.item {
         padding: 1.5rem 1rem !important;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -74,7 +66,6 @@ const isActive = (href: string) => {
         color: white;
       }
 
-      /* Close icon styling for flyout */
       #sidebar-menu .close.icon {
         position: absolute;
         top: 1rem;
@@ -89,12 +80,10 @@ const isActive = (href: string) => {
         color: white;
       }
 
-      /* Content padding */
       .ui.container {
         padding: 2rem 1rem;
       }
 
-      /* Ensure proper spacing on mobile */
       @media (max-width: 991px) {
         .ui.container {
           margin-top: 1rem;
@@ -104,64 +93,63 @@ const isActive = (href: string) => {
   </head>
 
   <body>
-    <!-- ===== MOBILE LAYOUT ===== -->
-    <div class="mobile-only">
-      <!-- Top fixed menu bar -->
-      <div class="ui top fixed menu">
-        <a class="item" id="mobile-menu-toggle">
+    <!-- Mobile Flyout Menu - Direct child of body -->
+    <div class="ui left vertical inverted menu flyout mobile-only" id="sidebar-menu">
+      <i class="close icon"></i>
+      <div class="header item">
+        <h2 class="ui header">
           <i class="bars icon"></i>
-          Μενού
-        </a>
-        <div class="item">
-          <i class="university icon"></i>Α' Συντακτική Βουλή των Πολιτών
-        </div>
+          Πλοήγηση
+        </h2>
       </div>
-
-      <!-- Mobile Flyout Menu -->
-      <div class="ui left vertical inverted menu flyout" id="sidebar-menu">
-        <i class="close icon"></i>
-        <div class="header item">
-          <h2 class="ui header">
-            <i class="bars icon"></i>
-            Πλοήγηση
-          </h2>
-        </div>
-        <div class="scrolling content">
-          {menuItems.map(item => (
-            <a
-              class={`item ${isActive(item.href) ? 'active' : ''}`}
-              href={item.href}
-            >
-              <i class={`${item.icon} icon`}></i>
-              {item.label}
-            </a>
-          ))}
-        </div>
+      <div class="scrolling content">
+        {menuItems.map(item => (
+          <a
+            class={`item ${isActive(item.href) ? 'active' : ''}`}
+            href={item.href}
+          >
+            <i class={`${item.icon} icon`}></i>
+            {item.label}
+          </a>
+        ))}
       </div>
     </div>
 
-    <!-- ===== DESKTOP LAYOUT ===== -->
-    <div class="desktop-only">
-      <div class="desktop-content-wrapper">
-        <h1 class="ui header"><i class="university icon"></i>Α' Συντακτική Βουλή των Πολιτών</h1>
-        <div class="ui pointing menu fluid centered">
-          {menuItems.map(menuItem => (
-            <a
-              class={`item ${isActive(menuItem.href) ? 'active' : ''}`}
-              href={menuItem.href}
-            >
-              <i class={`${menuItem.icon} icon`}></i>
-              {menuItem.label}
-            </a>
-          ))}
-        </div>
-      </div>
-    </div>
-
-    <!-- Page Content -->
+    <!-- Main content wrapper (pusher) -->
     <div class="pusher">
+      <!-- ===== MOBILE TOP MENU ===== -->
+      <div class="mobile-only">
+        <div class="ui top fixed menu">
+          <a class="item" id="mobile-menu-toggle">
+            <i class="bars icon"></i>
+            Μενού
+          </a>
+          <div class="item">
+            <i class="university icon"></i>Α' Συντακτική Βουλή των Πολιτών
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== DESKTOP LAYOUT ===== -->
+      <div class="desktop-only">
+        <div class="desktop-content-wrapper">
+          <h1 class="ui header"><i class="university icon"></i>Α' Συντακτική Βουλή των Πολιτών</h1>
+          <div class="ui pointing menu fluid centered">
+            {menuItems.map(menuItem => (
+              <a
+                class={`item ${isActive(menuItem.href) ? 'active' : ''}`}
+                href={menuItem.href}
+              >
+                <i class={`${menuItem.icon} icon`}></i>
+                {menuItem.label}
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <!-- Page Content -->
       <div class="full height">
-        <!-- Desktop: constrained width, Mobile: full width -->
         <div class="desktop-only">
           <div class="desktop-content-wrapper">
             <div class="ui segment">
@@ -184,7 +172,6 @@ const isActive = (href: string) => {
 
     <script is:inline>
       document.addEventListener('DOMContentLoaded', function() {
-        // Add mobile-view class to body on mobile devices
         function updateMobileClass() {
           if (window.innerWidth < 992) {
             document.body.classList.add('mobile-view');
@@ -196,7 +183,6 @@ const isActive = (href: string) => {
         updateMobileClass();
         window.addEventListener('resize', updateMobileClass);
 
-        // Mobile menu toggle
         const menuToggle = document.getElementById('mobile-menu-toggle');
         if (menuToggle) {
           menuToggle.addEventListener('click', function(e) {
@@ -206,7 +192,6 @@ const isActive = (href: string) => {
           });
         }
 
-        // Close icon functionality
         const closeIcon = document.querySelector('#sidebar-menu .close.icon');
         if (closeIcon) {
           closeIcon.addEventListener('click', function(e) {
@@ -216,14 +201,12 @@ const isActive = (href: string) => {
           });
         }
 
-        // Close flyout when clicking on a menu item
         document.querySelectorAll('#sidebar-menu .item:not(.header)').forEach(item => {
           item.addEventListener('click', function() {
             $('.ui.flyout').flyout('hide');
           });
         });
 
-        // Initialize flyout
         $('.ui.flyout').flyout({
           context: 'body',
           duration: 300,
@@ -237,7 +220,6 @@ const isActive = (href: string) => {
           }
         });
 
-        // Handle window resize
         function handleResize() {
           if (window.innerWidth >= 992) {
             $('.ui.flyout').flyout('hide');
