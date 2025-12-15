@@ -31,265 +31,250 @@ function getPollPercentage(votes, total) {
 ---
 
 <Layout>
-    <div class="ui container">
-        <div class="ui breadcrumb" style="margin-bottom: 2rem;">
-            <a href="/discussion" class="section">Συζήτηση</a>
-            <div class="divider">/</div>
-            <div class="active section">#{number}</div>
-        </div>
+    <div class="ui breadcrumb" style="margin-bottom: 2rem;">
+        <a href="/discussion" class="section">Συζήτηση</a>
+        <div class="divider">/</div>
+        <div class="active section">#{number}</div>
+    </div>
 
-        {
-            error && (
-                <div class="ui negative message">
-                    <div class="header">Σφάλμα</div>
-                    <p>{error}</p>
-                </div>
-            )
-        }
+    {
+        error && (
+            <div class="ui negative message">
+                <div class="header">Σφάλμα</div>
+                <p>{error}</p>
+            </div>
+        )
+    }
 
-        {
-            discussion && (
-                <div>
-                    <div class="ui segments">
-                        <div class="ui segment raised padded">
-                            <h1
-                                class="ui header"
-                                style="word-break: break-word; font-size: 1.8em;"
-                            >
-                                {discussion.title}
-                            </h1>
+    {
+        discussion && (
+            <div>
+                <div class="ui segments">
+                    <div class="ui segment raised padded">
+                        <h1
+                            class="ui header"
+                            style="word-break: break-word; font-size: 1.8em;"
+                        >
+                            {discussion.title}
+                        </h1>
 
-                            <div class="ui divider hidden" />
+                        <div class="ui divider hidden" />
 
+                        <div
+                            class="ui content text-body"
+                            style="font-size: 1.15em; line-height: 1.6;"
+                        >
+                            <div set:html={marked.parse(discussion.body)} />
+                        </div>
+
+                        {discussion.poll && (
                             <div
-                                class="ui content text-body"
-                                style="font-size: 1.15em; line-height: 1.6;"
+                                class="ui segment secondary"
+                                style="margin-top: 2rem; border: 1px solid rgba(34,36,38,.15);"
                             >
-                                <div set:html={marked.parse(discussion.body)} />
-                            </div>
-
-                            {discussion.poll && (
-                                <div
-                                    class="ui segment secondary"
-                                    style="margin-top: 2rem; border: 1px solid rgba(34,36,38,.15);"
-                                >
-                                    <h4 class="ui header">
-                                        <i class="chart bar icon" />
-                                        {discussion.poll.question}
-                                    </h4>
-                                    <div class="ui list">
-                                        {discussion.poll.options.nodes.map(
-                                            (opt) => {
-                                                const voteCount =
-                                                    opt.totalVoteCount;
-                                                const percent =
-                                                    getPollPercentage(
-                                                        voteCount,
-                                                        discussion.poll
-                                                            .totalVoteCount,
-                                                    );
-                                                return (
-                                                    <div
-                                                        class="item"
-                                                        style="padding: 0.5em 0;"
-                                                    >
-                                                        <div class="content">
+                                <h4 class="ui header">
+                                    <i class="chart bar icon" />
+                                    {discussion.poll.question}
+                                </h4>
+                                <div class="ui list">
+                                    {discussion.poll.options.nodes.map(
+                                        (opt) => {
+                                            const voteCount =
+                                                opt.totalVoteCount;
+                                            const percent = getPollPercentage(
+                                                voteCount,
+                                                discussion.poll.totalVoteCount,
+                                            );
+                                            return (
+                                                <div
+                                                    class="item"
+                                                    style="padding: 0.5em 0;"
+                                                >
+                                                    <div class="content">
+                                                        <div
+                                                            class="header"
+                                                            style="margin-bottom: 0.3em;"
+                                                        >
+                                                            {opt.option}
+                                                            <span style="float:right; color: font-weight: normal;">
+                                                                {voteCount} (
+                                                                {percent}%)
+                                                            </span>
+                                                        </div>
+                                                        <div
+                                                            class="ui tiny progress active"
+                                                            data-percent={
+                                                                percent
+                                                            }
+                                                            style="margin: 0;"
+                                                        >
                                                             <div
-                                                                class="header"
-                                                                style="margin-bottom: 0.3em;"
-                                                            >
-                                                                {opt.option}
-                                                                <span style="float:right; color: font-weight: normal;">
-                                                                    {voteCount}{" "}
-                                                                    ({percent}%)
-                                                                </span>
-                                                            </div>
-                                                            <div
-                                                                class="ui tiny progress active"
-                                                                data-percent={
-                                                                    percent
-                                                                }
-                                                                style="margin: 0;"
-                                                            >
-                                                                <div
-                                                                    class="bar"
-                                                                    style={`width: ${percent}%; min-width: 0;`}
-                                                                />
-                                                            </div>
+                                                                class="bar"
+                                                                style={`width: ${percent}%; min-width: 0;`}
+                                                            />
                                                         </div>
                                                     </div>
-                                                );
-                                            },
-                                        )}
-                                    </div>
-                                    <div class="ui meta tiny">
-                                        Σύνολο ψήφων:{" "}
-                                        {discussion.poll.totalVoteCount}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        <div class="ui secondary segment">
-                            <div class="ui stackable grid vertical aligned">
-                                <div class="eight wide column">
-                                    <div class="ui list horizontal">
-                                        <div class="item">
-                                            <img
-                                                class="ui avatar image"
-                                                src={
-                                                    discussion.author.avatarUrl
-                                                }
-                                            />
-                                            <div class="content">
-                                                <div class="header">
-                                                    {discussion.author.login}
                                                 </div>
-                                            </div>
-                                        </div>
-                                        <div class="item" style="color: #666;">
-                                            <i class="calendar alternate outline icon" />
-                                            {formatDate(discussion.createdAt)}
-                                        </div>
-                                    </div>
+                                            );
+                                        },
+                                    )}
                                 </div>
-                                <div class="eight wide column right aligned mobile-left">
-                                    <div class="ui labels">
-                                        <div class="ui label" title="Κατηγορία">
-                                            <span
-                                                set:html={
-                                                    discussion.category.emoji
-                                                }
-                                            />
-                                            {discussion.category.name}
-                                        </div>
-                                        <div
-                                            class="ui basic label"
-                                            title="Ψήφοι"
-                                        >
-                                            <i class="arrow up icon" />
-                                            {discussion.upvoteCount}
-                                        </div>
-                                    </div>
+                                <div class="ui meta tiny">
+                                    Σύνολο ψήφων:{" "}
+                                    {discussion.poll.totalVoteCount}
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div
-                        class="ui large threaded comments"
-                        style="max-width: 100%; margin-top: 2rem;"
-                    >
-                        <h3 class="ui dividing header">
-                            Σχόλια ({discussion.comments.nodes.length})
-                        </h3>
-
-                        {discussion.comments.nodes.map((comment) => {
-                            const isAnswer =
-                                discussion.answer &&
-                                discussion.answer.id === comment.id;
-
-                            return (
-                                <div
-                                    class={`comment ${isAnswer ? "accepted-answer" : ""}`}
-                                >
-                                    <a class="avatar">
-                                        <img src={comment.author.avatarUrl} />
-                                    </a>
-                                    <div class="content">
-                                        <a class="author">
-                                            {comment.author.login}
-                                        </a>
-                                        <div class="metadata">
-                                            <span class="date">
-                                                {formatDate(comment.createdAt)}
-                                            </span>
-                                            {isAnswer && (
-                                                <span class="ui left pointing green label tiny">
-                                                    <i class="check icon" />{" "}
-                                                    Επιλεγμένη Απάντηση
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div class="text">
-                                            <div
-                                                set:html={marked.parse(
-                                                    comment.body,
-                                                )}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {comment.replies &&
-                                        comment.replies.nodes.length > 0 && (
-                                            <div class="comments">
-                                                {comment.replies.nodes.map(
-                                                    (reply) => (
-                                                        <div class="comment">
-                                                            <a class="avatar">
-                                                                <img
-                                                                    src={
-                                                                        reply
-                                                                            .author
-                                                                            .avatarUrl
-                                                                    }
-                                                                />
-                                                            </a>
-                                                            <div class="content">
-                                                                <a class="author">
-                                                                    {
-                                                                        reply
-                                                                            .author
-                                                                            .login
-                                                                    }
-                                                                </a>
-                                                                <div class="metadata">
-                                                                    <span class="date">
-                                                                        {formatDate(
-                                                                            reply.createdAt,
-                                                                        )}
-                                                                    </span>
-                                                                </div>
-                                                                <div class="text">
-                                                                    <div
-                                                                        set:html={marked.parse(
-                                                                            reply.body,
-                                                                        )}
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    ),
-                                                )}
-                                            </div>
-                                        )}
-                                </div>
-                            );
-                        })}
-
-                        {discussion.comments.nodes.length === 0 && (
-                            <div class="ui ignored info message">
-                                Δεν υπάρχουν ακόμα σχόλια σε αυτή τη συζήτηση.
                             </div>
                         )}
                     </div>
 
-                    <div class="ui divider" />
-
-                    <div style="text-align: center; margin-bottom: 3rem;">
-                        <a
-                            href={discussion.url}
-                            target="_blank"
-                            class="ui primary button"
-                        >
-                            <i class="github icon" />
-                            Συμμετοχή στη συζήτηση (GitHub)
-                        </a>
+                    <div class="ui secondary segment">
+                        <div class="ui stackable grid vertical aligned">
+                            <div class="eight wide column">
+                                <div class="ui list horizontal">
+                                    <div class="item">
+                                        <img
+                                            class="ui avatar image"
+                                            src={discussion.author.avatarUrl}
+                                        />
+                                        <div class="content">
+                                            <div class="header">
+                                                {discussion.author.login}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="item" style="color: #666;">
+                                        <i class="calendar alternate outline icon" />
+                                        {formatDate(discussion.createdAt)}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="eight wide column right aligned mobile-left">
+                                <div class="ui labels">
+                                    <div class="ui label" title="Κατηγορία">
+                                        <span
+                                            set:html={discussion.category.emoji}
+                                        />
+                                        {discussion.category.name}
+                                    </div>
+                                    <div class="ui basic label" title="Ψήφοι">
+                                        <i class="arrow up icon" />
+                                        {discussion.upvoteCount}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            )
-        }
-    </div>
+
+                <div
+                    class="ui large threaded comments"
+                    style="max-width: 100%; margin-top: 2rem;"
+                >
+                    <h3 class="ui dividing header">
+                        Σχόλια ({discussion.comments.nodes.length})
+                    </h3>
+
+                    {discussion.comments.nodes.map((comment) => {
+                        const isAnswer =
+                            discussion.answer &&
+                            discussion.answer.id === comment.id;
+
+                        return (
+                            <div
+                                class={`comment ${isAnswer ? "accepted-answer" : ""}`}
+                            >
+                                <a class="avatar">
+                                    <img src={comment.author.avatarUrl} />
+                                </a>
+                                <div class="content">
+                                    <a class="author">{comment.author.login}</a>
+                                    <div class="metadata">
+                                        <span class="date">
+                                            {formatDate(comment.createdAt)}
+                                        </span>
+                                        {isAnswer && (
+                                            <span class="ui left pointing green label tiny">
+                                                <i class="check icon" />{" "}
+                                                Επιλεγμένη Απάντηση
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div class="text">
+                                        <div
+                                            set:html={marked.parse(
+                                                comment.body,
+                                            )}
+                                        />
+                                    </div>
+                                </div>
+
+                                {comment.replies &&
+                                    comment.replies.nodes.length > 0 && (
+                                        <div class="comments">
+                                            {comment.replies.nodes.map(
+                                                (reply) => (
+                                                    <div class="comment">
+                                                        <a class="avatar">
+                                                            <img
+                                                                src={
+                                                                    reply.author
+                                                                        .avatarUrl
+                                                                }
+                                                            />
+                                                        </a>
+                                                        <div class="content">
+                                                            <a class="author">
+                                                                {
+                                                                    reply.author
+                                                                        .login
+                                                                }
+                                                            </a>
+                                                            <div class="metadata">
+                                                                <span class="date">
+                                                                    {formatDate(
+                                                                        reply.createdAt,
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                            <div class="text">
+                                                                <div
+                                                                    set:html={marked.parse(
+                                                                        reply.body,
+                                                                    )}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ),
+                                            )}
+                                        </div>
+                                    )}
+                            </div>
+                        );
+                    })}
+
+                    {discussion.comments.nodes.length === 0 && (
+                        <div class="ui ignored info message">
+                            Δεν υπάρχουν ακόμα σχόλια σε αυτή τη συζήτηση.
+                        </div>
+                    )}
+                </div>
+
+                <div class="ui divider" />
+
+                <div style="text-align: center; margin-bottom: 3rem;">
+                    <a
+                        href={discussion.url}
+                        target="_blank"
+                        class="ui primary button"
+                    >
+                        <i class="github icon" />
+                        Συμμετοχή στη συζήτηση (GitHub)
+                    </a>
+                </div>
+            </div>
+        )
+    }
 </Layout>
 
 <style>
