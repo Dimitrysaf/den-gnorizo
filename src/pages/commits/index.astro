@@ -21,62 +21,60 @@ function formatDate(dateString) {
 ---
 
 <Layout>
-    <div class="ui container">
-        <div class="ui breadcrumb" style="margin-bottom: 2rem;">
-            <a href="/" class="section">Αρχική</a>
-            <div class="divider">/</div>
-            <div class="active section">Ιστορικό Αλλαγών</div>
-        </div>
+    <div class="ui breadcrumb" style="margin-bottom: 2rem;">
+        <a href="/" class="section">Αρχική</a>
+        <div class="divider">/</div>
+        <div class="active section">Ιστορικό Αλλαγών</div>
+    </div>
 
-        <h1 class="ui header">Κατάλογος Αλλαγών</h1>
-        <div class="ui divider"></div>
+    <h1 class="ui header">Κατάλογος Αλλαγών</h1>
+    <div class="ui divider"></div>
 
-        {
-            error && (
-                <div class="ui negative message icon">
-                    <i class="exclamation triangle icon" />
-                    <div class="content">
-                        <div class="header">Σφάλμα!!!</div>
-                        <p>{error}</p>
-                    </div>
+    {
+        error && (
+            <div class="ui negative message icon">
+                <i class="exclamation triangle icon" />
+                <div class="content">
+                    <div class="header">Σφάλμα!!!</div>
+                    <p>{error}</p>
                 </div>
-            )
-        }
+            </div>
+        )
+    }
 
-        <div class="ui relaxed divided selection list" id="commits-list">
-            {
-                commits.map((commit) => (
-                    <a href={`/commits/${commit.sha}`} class="item">
-                        <i class="large git square middle aligned icon" />
-                        <div class="content">
-                            <div class="header" style="margin-bottom: 0.3em;">
-                                {commit.commit.message}
-                            </div>
-                            <div class="description label-container">
-                                <span class="ui tiny label">
-                                    <i class="user icon" />{" "}
-                                    {commit.commit.author.name}
-                                </span>
-                                <span class="ui tiny label">
-                                    <i class="clock icon" />{" "}
-                                    {formatDate(commit.commit.author.date)}
-                                </span>
-                                <span class="ui tiny basic label">
-                                    <i class="code icon" />{" "}
-                                    {commit.sha.substring(0, 7)}
-                                </span>
-                            </div>
+    <div class="ui relaxed divided selection list" id="commits-list">
+        {
+            commits.map((commit) => (
+                <a href={`/commits/${commit.sha}`} class="item">
+                    <i class="large git square middle aligned icon" />
+                    <div class="content">
+                        <div class="header" style="margin-bottom: 0.3em;">
+                            {commit.commit.message}
                         </div>
-                    </a>
-                ))
-            }
-        </div>
+                        <div class="description label-container">
+                            <span class="ui tiny label">
+                                <i class="user icon" />{" "}
+                                {commit.commit.author.name}
+                            </span>
+                            <span class="ui tiny label">
+                                <i class="clock icon" />{" "}
+                                {formatDate(commit.commit.author.date)}
+                            </span>
+                            <span class="ui tiny basic label">
+                                <i class="code icon" />{" "}
+                                {commit.sha.substring(0, 7)}
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            ))
+        }
+    </div>
 
-        <div style="margin-top: 2rem; text-align: center;">
-            <button id="load-more-btn" class="ui basic button">
-                Φόρτωση παλαιότερων
-            </button>
-        </div>
+    <div style="margin-top: 2rem; text-align: center;">
+        <button id="load-more-btn" class="ui basic button">
+            Φόρτωση παλαιότερων
+        </button>
     </div>
 </Layout>
 
