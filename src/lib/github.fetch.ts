@@ -18,6 +18,7 @@ const CACHE_TTL = 5 * 60 * 1000;
 class GitHubAPI {
   private config: GitHubConfig;
   private baseUrl = 'https://api.github.com';
+  private graphqlUrl = 'https://api.github.com/graphql';
 
   constructor(config: GitHubConfig) {
     this.config = config;
@@ -76,6 +77,28 @@ class GitHubAPI {
     }
   }
 
+  private async fetchGraphQL(query: string) {
+    const response = await fetch(this.graphqlUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.config.token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`GraphQL Error: ${response.status}`);
+    }
+
+    const result = await response.json();
+    if (result.errors) {
+      throw new Error(`GraphQL Query Error: ${result.errors[0].message}`);
+    }
+
+    return result.data;
+  }
+
   // ========== REPOSITORY ==========
   async getRepository() {
     return this.request(`/repos/${this.config.owner}/${this.config.repo}`);
@@ -117,13 +140,8 @@ class GitHubAPI {
   async getFileContent(path: string, ref?: string) {
     const data = await this.getContents(path, ref);
 
-    if (Array.isArray(data)) {
-      throw new Error('Path is a directory, not a file');
-    }
-
-    if (data.type !== 'file') {
-      throw new Error(`Path is a ${data.type}, not a file`);
-    }
+    if (Array.isArray(data)) throw new Error('Path is a directory, not a file');
+    if (data.type !== 'file') throw new Error(`Path is a ${data.type}, not a file`);
 
     if (data.encoding === 'base64' && data.content) {
       const binaryString = atob(data.content.replace(/\n/g, ''));
@@ -143,23 +161,122 @@ class GitHubAPI {
     return data;
   }
 
-  // ========== TREES ==========
   async getTree(treeSha: string, recursive: boolean = false) {
     const params = recursive ? '?recursive=1' : '';
     return this.request(`/repos/${this.config.owner}/${this.config.repo}/git/trees/${treeSha}${params}`);
   }
 
-  // ========== DISCUSSIONS ==========
+  // ========== DISCUSSIONS (GraphQL) ==========
   async listDiscussions() {
-    return this.request(`/repos/${this.config.owner}/${this.config.repo}/discussions`);
+    const query = `
+      query {
+        repository(owner: "${this.config.owner}", name: "${this.config.repo}") {
+          pinnedDiscussions(first: 1) {
+            nodes {
+              discussion {
+                title
+                number
+                createdAt
+                bodyText
+                author {
+                  login
+                  avatarUrl
+                }
+                comments {
+                  totalCount
+                }
+              }
+            }
+          }
+          discussions(first: 20, orderBy: {field: UPDATED_AT, direction: DESC}) {
+            nodes {
+              title
+              number
+              createdAt
+              bodyText
+              author {
+                login
+                avatarUrl
+              }
+              comments {
+                totalCount
+              }
+              category {
+                name
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const data = await this.fetchGraphQL(query);
+
+    return {
+      pinned: data.repository.pinnedDiscussions.nodes.map((n: any) => n.discussion),
+      others: data.repository.discussions.nodes
+    };
   }
 
   async getDiscussion(discussionNumber: number) {
-    return this.request(`/repos/${this.config.owner}/${this.config.repo}/discussions/${discussionNumber}`);
-  }
-
-  async listDiscussionComments(discussionNumber: number) {
-    return this.request(`/repos/${this.config.owner}/${this.config.repo}/discussions/${discussionNumber}/comments`);
+    const query = `
+      query {
+        repository(owner: "${this.config.owner}", name: "${this.config.repo}") {
+          discussion(number: ${discussionNumber}) {
+            id
+            title
+            body
+            createdAt
+            url
+            upvoteCount
+            category {
+              name
+              emoji
+            }
+            author {
+              login
+              avatarUrl
+            }
+            poll {
+              question
+              totalVoteCount
+              options(first: 20) {
+                nodes {
+                  option
+                  totalVoteCount
+                }
+              }
+            }
+            answer {
+              id
+            }
+            comments(first: 50) {
+              nodes {
+                id
+                body
+                createdAt
+                author {
+                  login
+                  avatarUrl
+                }
+                replies(first: 20) {
+                  nodes {
+                    body
+                    createdAt
+                    author {
+                      login
+                      avatarUrl
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+    const data = await this.fetchGraphQL(query);
+    return data.repository.discussion;
   }
 
   // ========== ISSUES ==========
@@ -198,7 +315,6 @@ class GitHubAPI {
     return this.request(`/repos/${this.config.owner}/${this.config.repo}/pulls/${prNumber}/files`);
   }
 
-  // ========== RELEASES ==========
   async listReleases() {
     return this.request(`/repos/${this.config.owner}/${this.config.repo}/releases`);
   }
@@ -211,12 +327,10 @@ class GitHubAPI {
     return this.request(`/repos/${this.config.owner}/${this.config.repo}/releases/tags/${tag}`);
   }
 
-  // ========== TAGS ==========
   async listTags() {
     return this.request(`/repos/${this.config.owner}/${this.config.repo}/tags`);
   }
 
-  // ========== SEARCH ==========
   async searchCode(query: string) {
     const q = `${query}+repo:${this.config.owner}/${this.config.repo}`;
     return this.request(`/search/code?q=${encodeURIComponent(q)}`);

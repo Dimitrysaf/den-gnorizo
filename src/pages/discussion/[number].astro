@@ -1,0 +1,302 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { createGitHubAPI } from "../../lib/github.fetch";
+import { marked } from "marked";
+
+const { number } = Astro.params;
+const api = createGitHubAPI();
+
+let discussion = null;
+let error = null;
+
+try {
+    if (number) {
+        discussion = await api.getDiscussion(Number(number));
+    }
+} catch (e) {
+    error = e.message;
+}
+
+function formatDate(dateString) {
+    return new Intl.DateTimeFormat("el-GR", {
+        dateStyle: "full",
+        timeStyle: "short",
+    }).format(new Date(dateString));
+}
+
+function getPollPercentage(votes, total) {
+    if (total === 0) return 0;
+    return Math.round((votes / total) * 100);
+}
+---
+
+<Layout>
+    <div class="ui container">
+        <div class="ui breadcrumb" style="margin-bottom: 2rem;">
+            <a href="/discussion" class="section">Συζήτηση</a>
+            <div class="divider">/</div>
+            <div class="active section">#{number}</div>
+        </div>
+
+        {
+            error && (
+                <div class="ui negative message">
+                    <div class="header">Σφάλμα</div>
+                    <p>{error}</p>
+                </div>
+            )
+        }
+
+        {
+            discussion && (
+                <div>
+                    <div class="ui segment raised">
+                        <h1 class="ui header" style="word-break: break-word;">
+                            <div class="content">{discussion.title}</div>
+                            <div class="sub header" style="margin-top: 0.5rem;">
+                                <div class="ui horizontal list">
+                                    <div class="item">
+                                        <div class="ui label">
+                                            <span
+                                                set:html={
+                                                    discussion.category.emoji
+                                                }
+                                            />
+                                            {discussion.category.name}
+                                        </div>
+                                    </div>
+                                    <div class="item">
+                                        <div class="ui label basic">
+                                            <i class="arrow up icon" />
+                                            {discussion.upvoteCount} Ψήφοι
+                                        </div>
+                                    </div>
+                                    <div class="item">
+                                        <img
+                                            class="ui avatar image"
+                                            src={discussion.author.avatarUrl}
+                                            alt="Avatar"
+                                        />
+                                        <strong>
+                                            {discussion.author.login}
+                                        </strong>
+                                    </div>
+                                    <div class="item">
+                                        {formatDate(discussion.createdAt)}
+                                    </div>
+                                </div>
+                            </div>
+                        </h1>
+
+                        <div class="ui divider" />
+
+                        <div
+                            class="ui content text-body"
+                            style="font-size: 1.1em; line-height: 1.6;"
+                        >
+                            <div set:html={marked.parse(discussion.body)} />
+                        </div>
+
+                        {discussion.poll && (
+                            <div class="ui segment secondary">
+                                <h4 class="ui header">
+                                    <i class="chart bar icon" />
+                                    {discussion.poll.question}
+                                </h4>
+                                <div class="ui list">
+                                    {discussion.poll.options.nodes.map(
+                                        (opt) => {
+                                            const voteCount =
+                                                opt.totalVoteCount;
+                                            const percent = getPollPercentage(
+                                                voteCount,
+                                                discussion.poll.totalVoteCount,
+                                            );
+                                            return (
+                                                <div
+                                                    class="item"
+                                                    style="padding: 0.5em 0;"
+                                                >
+                                                    <div class="content">
+                                                        <div
+                                                            class="header"
+                                                            style="margin-bottom: 0.3em;"
+                                                        >
+                                                            {opt.option}
+                                                            <span style="float:right; color: #666;">
+                                                                {voteCount}{" "}
+                                                                ψήφοι ({percent}
+                                                                %)
+                                                            </span>
+                                                        </div>
+                                                        <div
+                                                            class="ui tiny progress active"
+                                                            data-percent={
+                                                                percent
+                                                            }
+                                                            style="margin: 0;"
+                                                        >
+                                                            <div
+                                                                class="bar"
+                                                                style={`width: ${percent}%; min-width: 0;`}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        },
+                                    )}
+                                </div>
+                                <div class="ui meta">
+                                    Σύνολο ψήφων:{" "}
+                                    {discussion.poll.totalVoteCount}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div
+                        class="ui large threaded comments"
+                        style="max-width: 100%;"
+                    >
+                        <h3 class="ui dividing header">
+                            Σχόλια ({discussion.comments.nodes.length})
+                        </h3>
+
+                        {discussion.comments.nodes.map((comment) => {
+                            const isAnswer =
+                                discussion.answer &&
+                                discussion.answer.id === comment.id;
+
+                            return (
+                                <div
+                                    class={`comment ${isAnswer ? "accepted-answer" : ""}`}
+                                >
+                                    <a class="avatar">
+                                        <img src={comment.author.avatarUrl} />
+                                    </a>
+                                    <div class="content">
+                                        <a class="author">
+                                            {comment.author.login}
+                                        </a>
+                                        <div class="metadata">
+                                            <span class="date">
+                                                {formatDate(comment.createdAt)}
+                                            </span>
+                                            {isAnswer && (
+                                                <span class="ui left pointing green label tiny">
+                                                    <i class="check icon" />{" "}
+                                                    Επιλεγμένη Απάντηση
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div class="text">
+                                            <div
+                                                set:html={marked.parse(
+                                                    comment.body,
+                                                )}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {comment.replies &&
+                                        comment.replies.nodes.length > 0 && (
+                                            <div class="comments">
+                                                {comment.replies.nodes.map(
+                                                    (reply) => (
+                                                        <div class="comment">
+                                                            <a class="avatar">
+                                                                <img
+                                                                    src={
+                                                                        reply
+                                                                            .author
+                                                                            .avatarUrl
+                                                                    }
+                                                                />
+                                                            </a>
+                                                            <div class="content">
+                                                                <a class="author">
+                                                                    {
+                                                                        reply
+                                                                            .author
+                                                                            .login
+                                                                    }
+                                                                </a>
+                                                                <div class="metadata">
+                                                                    <span class="date">
+                                                                        {formatDate(
+                                                                            reply.createdAt,
+                                                                        )}
+                                                                    </span>
+                                                                </div>
+                                                                <div class="text">
+                                                                    <div
+                                                                        set:html={marked.parse(
+                                                                            reply.body,
+                                                                        )}
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ),
+                                                )}
+                                            </div>
+                                        )}
+                                </div>
+                            );
+                        })}
+
+                        {discussion.comments.nodes.length === 0 && (
+                            <div class="ui ignored info message">
+                                Δεν υπάρχουν ακόμα σχόλια σε αυτή τη συζήτηση.
+                            </div>
+                        )}
+                    </div>
+
+                    <div class="ui divider" />
+
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <a
+                            href={discussion.url}
+                            target="_blank"
+                            class="ui primary button"
+                        >
+                            <i class="github icon" />
+                            Συμμετοχή στη συζήτηση (GitHub)
+                        </a>
+                    </div>
+                </div>
+            )
+        }
+    </div>
+</Layout>
+
+<style>
+    .accepted-answer {
+        background-color: #f0fff4;
+        border: 1px solid #c3e6cb;
+        padding: 1em;
+        border-radius: 5px;
+        margin-bottom: 1em;
+    }
+
+    .text-body :global(img) {
+        max-width: 100%;
+        height: auto;
+        border-radius: 5px;
+    }
+
+    .text-body :global(pre) {
+        background: #f4f4f4;
+        padding: 1rem;
+        border-radius: 4px;
+        overflow-x: auto;
+    }
+
+    .text-body :global(blockquote) {
+        border-left: 4px solid #ccc;
+        margin-left: 0;
+        padding-left: 1rem;
+        color: #666;
+    }
+</style>
