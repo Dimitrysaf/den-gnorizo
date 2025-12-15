@@ -1,0 +1,42 @@
+---
+const { code, title, message } = Astro.props;
+
+// Select icon based on code
+let icon = "exclamation triangle";
+
+if (code === 404) icon = "compass outline";
+if (code === 500) icon = "server";
+if (code === 501) icon = "hard hat";
+---
+
+<div class="ui container center aligned" style="padding-top: 10vh; padding-bottom: 10vh;">
+    <h1 class="ui icon header" style="font-size: 4em;">
+        <i class={`${icon} icon`} style="margin-bottom: 0.2em; color: #fbbd08;"></i>
+        <div class="content">
+            {code}
+            <div class="sub header" style="font-size: 0.4em; margin-top: 0.5em;">
+                {title}
+            </div>
+        </div>
+    </h1>
+    
+    <div class="ui divider hidden"></div>
+    
+    <div class="ui text container">
+        <p style="font-size: 1.3em; color: #666;">
+            {message}
+        </p>
+    </div>
+
+    <div class="ui divider hidden"></div>
+
+    <div class="ui buttons large">
+        <a href="/" class="ui primary button">
+            <i class="home icon"></i> Αρχική
+        </a>
+        <div class="or" data-text="ή"></div>
+        <button onclick="history.back()" class="ui button">
+            <i class="left arrow icon"></i> Επιστροφή
+        </button>
+    </div>
+</div>

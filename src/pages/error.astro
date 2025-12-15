@@ -1,0 +1,12 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ErrorView from "../components/ErrorView.astro";
+
+const code = Astro.url.searchParams.get('code') || 500;
+const title = Astro.url.searchParams.get('title') || "Σφάλμα";
+const message = Astro.url.searchParams.get('message') || "Παρουσιάστηκε ένα άγνωστο σφάλμα.";
+---
+
+<Layout>
+    <ErrorView code={code} title={title} message={message} />
+</Layout>

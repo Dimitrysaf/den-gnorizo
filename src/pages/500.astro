@@ -1,0 +1,24 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ErrorView from "../components/ErrorView.astro";
+
+// Optional: Capture the error details if passed by Astro
+const { error } = Astro.props;
+---
+
+<Layout>
+    <ErrorView 
+        code={500} 
+        title="Εσωτερικό Σφάλμα" 
+        message="Κάτι πήγε στραβά στον διακομιστή. Παρακαλούμε δοκιμάστε ξανά αργότερα."
+    />
+    
+    {import.meta.env.DEV && error && (
+        <div class="ui container" style="margin-top: 2rem;">
+            <div class="ui error message">
+                <div class="header">Debug Details</div>
+                <pre style="overflow: auto;">{error instanceof Error ? error.stack : error}</pre>
+            </div>
+        </div>
+    )}
+</Layout>

@@ -1,0 +1,12 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ErrorView from "../components/ErrorView.astro";
+---
+
+<Layout>
+    <ErrorView 
+        code={404} 
+        title="Η σελίδα δεν βρέθηκε" 
+        message="Η σελίδα που ψάχνετε έχει μετακινηθεί, διαγραφεί ή δεν υπήρξε ποτέ. Ελέγξτε τη διεύθυνση URL ή επιστρέψτε στην αρχική."
+    />
+</Layout>
