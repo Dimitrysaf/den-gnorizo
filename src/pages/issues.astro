@@ -1,7 +1,97 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/Layout.astro";
+import { createGitHubAPI } from "../lib/github.fetch";
+
+const api = createGitHubAPI();
+let issues = [];
+let error = null;
+
+try {
+  // Fetch only open issues
+  issues = await api.listIssues({ state: "open", per_page: 30 });
+} catch (e) {
+  error = e.message;
+}
+
+function formatDate(dateString) {
+  return new Intl.DateTimeFormat("el-GR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(dateString));
+}
+
+// Helper to determine text color based on background luminance
+function getContrastColor(hexcolor) {
+  // Convert hex to RGB
+  const r = parseInt(hexcolor.substr(0, 2), 16);
+  const g = parseInt(hexcolor.substr(2, 2), 16);
+  const b = parseInt(hexcolor.substr(4, 2), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 128 ? "black" : "white";
+}
 ---
+
 <Layout>
-  <h1>Reports Page</h1>
-  <p>This is the reports page content.</p>
+  <h1 class="ui header">
+    <i class="bug icon"></i>
+    <div class="content">
+      Αναφορές
+      <div class="sub header">Προβλήματα και εργασίες προς διεκπεραίωση</div>
+    </div>
+  </h1>
+  <div class="ui divider"></div>
+
+  {
+    error && (
+      <div class="ui negative message">
+        <div class="header">Σφάλμα</div>
+        <p>{error}</p>
+      </div>
+    )
+  }
+
+  <div class="ui relaxed divided list selection large">
+    {
+      issues.map((issue) => (
+        <a href={`/issues/${issue.number}`} class="item">
+          <i
+            class="large middle aligned exclamation circle icon"
+            style="color: #db2828;"
+          />
+          <div class="content">
+            <div class="header" style="margin-bottom: 0.3em; font-size: 1.1em;">
+              {issue.title}
+              {issue.labels.map((label) => (
+                <span
+                  class="ui label tiny"
+                  style={`background-color: #${label.color}; color: ${getContrastColor(label.color)}; margin-left: 0.5em;`}
+                >
+                  {label.name}
+                </span>
+              ))}
+            </div>
+            <div class="description">
+              #{issue.number} άνοιξε από <strong>{issue.user.login}</strong> •{" "}
+              {formatDate(issue.created_at)}
+              <span style="float: right; color: #666;">
+                <i class="comment icon" /> {issue.comments}
+              </span>
+            </div>
+          </div>
+        </a>
+      ))
+    }
+  </div>
+
+  {
+    issues.length === 0 && !error && (
+      <div class="ui placeholder segment">
+        <div class="ui icon header">
+          <i class="check circle outline icon" />
+          Δεν υπάρχουν ανοιχτά προβλήματα.
+        </div>
+      </div>
+    )
+  }
 </Layout>

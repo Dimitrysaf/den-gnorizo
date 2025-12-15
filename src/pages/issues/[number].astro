@@ -1,0 +1,214 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { createGitHubAPI } from "../../lib/github.fetch";
+import { marked } from "marked";
+
+const { number } = Astro.params;
+const api = createGitHubAPI();
+
+let issue = null;
+let comments = [];
+let error = null;
+
+try {
+    if (number) {
+        const [issueData, commentsData] = await Promise.all([
+            api.getIssue(Number(number)),
+            api.listIssueComments(Number(number)),
+        ]);
+        issue = issueData;
+        comments = commentsData;
+    }
+} catch (e) {
+    error = e.message;
+}
+
+function formatDate(dateString) {
+    return new Intl.DateTimeFormat("el-GR", {
+        dateStyle: "full",
+        timeStyle: "short",
+    }).format(new Date(dateString));
+}
+
+function getContrastColor(hexcolor) {
+    const r = parseInt(hexcolor.substr(0, 2), 16);
+    const g = parseInt(hexcolor.substr(2, 2), 16);
+    const b = parseInt(hexcolor.substr(4, 2), 16);
+    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+    return yiq >= 128 ? "black" : "white";
+}
+---
+
+<Layout>
+    <div class="ui breadcrumb" style="margin-bottom: 2rem;">
+        <a href="/issues" class="section">Αναφορές</a>
+        <div class="divider">/</div>
+        <div class="active section">#{number}</div>
+    </div>
+
+    {
+        error && (
+            <div class="ui negative message">
+                <div class="header">Σφάλμα</div>
+                <p>{error}</p>
+            </div>
+        )
+    }
+
+    {
+        issue && (
+            <div>
+                <div class="ui segments">
+                    <div class="ui segment raised">
+                        {issue.state === "open" ? (
+                            <div class="ui ribbon label green">
+                                <i class="exclamation circle icon" /> Ανοιχτό
+                            </div>
+                        ) : (
+                            <div class="ui ribbon label red">
+                                <i class="check circle icon" /> Κλειστό
+                            </div>
+                        )}
+
+                        <h1
+                            class="ui header"
+                            style="word-break: break-word; font-size: 1.8em; margin-top: 1rem;"
+                        >
+                            <span>{issue.title}</span>
+                        </h1>
+
+                        <div class="ui divider hidden" />
+
+                        <div
+                            class="ui content text-body"
+                            style="font-size: 1.15em; line-height: 1.6;"
+                        >
+                            <div
+                                set:html={marked.parse(
+                                    issue.body || "*(Δεν υπάρχει περιγραφή)*",
+                                )}
+                            />
+                        </div>
+                    </div>
+
+                    <div class="ui secondary segment">
+                        <div class="ui stackable grid vertical aligned">
+                            <div class="eight wide column">
+                                <div class="ui list horizontal">
+                                    <div class="item">
+                                        <img
+                                            class="ui avatar image"
+                                            src={issue.user.avatar_url}
+                                        />
+                                        <div class="content">
+                                            <div class="header">
+                                                {issue.user.login}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="item" style="color: #666;">
+                                        <i class="calendar alternate outline icon" />
+                                        {formatDate(issue.created_at)}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="eight wide column right aligned mobile-left">
+                                <div class="ui labels">
+                                    {issue.labels.map((label) => (
+                                        <div
+                                            class="ui label"
+                                            style={`background-color: #${label.color}; color: ${getContrastColor(label.color)}; border: 1px solid rgba(0,0,0,0.1);`}
+                                        >
+                                            {label.name}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="ui large threaded comments"
+                    style="max-width: 100%; margin-top: 2rem;"
+                >
+                    <h3 class="ui dividing header">
+                        Σχόλια ({comments.length})
+                    </h3>
+
+                    {comments.map((comment) => (
+                        <div class="comment">
+                            <a class="avatar">
+                                <img src={comment.user.avatar_url} />
+                            </a>
+                            <div class="content">
+                                <a class="author">{comment.user.login}</a>
+                                <div class="metadata">
+                                    <span class="date">
+                                        {formatDate(comment.created_at)}
+                                    </span>
+                                </div>
+                                <div class="text">
+                                    <div
+                                        set:html={marked.parse(comment.body)}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+
+                    {comments.length === 0 && (
+                        <div class="ui ignored info message">
+                            Δεν υπάρχουν ακόμα σχόλια.
+                        </div>
+                    )}
+                </div>
+
+                <div class="ui divider" />
+
+                <div style="text-align: center; margin-bottom: 3rem;">
+                    <a
+                        href={issue.html_url}
+                        target="_blank"
+                        class="ui primary button"
+                    >
+                        <i class="github icon" />
+                        Προβολή στο GitHub
+                    </a>
+                </div>
+            </div>
+        )
+    }
+</Layout>
+
+<style>
+    .text-body :global(img) {
+        max-width: 100%;
+        height: auto;
+        border-radius: 5px;
+        display: block;
+        margin: 1rem 0;
+    }
+
+    .text-body :global(pre) {
+        background: #f4f4f4;
+        padding: 1rem;
+        border-radius: 4px;
+        overflow-x: auto;
+    }
+
+    .text-body :global(blockquote) {
+        border-left: 4px solid #ccc;
+        margin-left: 0;
+        padding-left: 1rem;
+        color: #666;
+        font-style: italic;
+    }
+
+    @media (max-width: 767px) {
+        .mobile-left {
+            text-align: left !important;
+            margin-top: 0.5rem;
+        }
+    }
+</style>
