@@ -3,12 +3,16 @@ import Layout from "../layouts/Layout.astro";
 import { createGitHubAPI } from "../lib/github.fetch";
 
 const api = createGitHubAPI();
-let issues = [];
+let allIssues = [];
 let error = null;
 
 try {
-  // Fetch only open issues
-  issues = await api.listIssues({ state: "open", per_page: 30 });
+  const [openData, closedData] = await Promise.all([
+    api.listIssues({ state: "open", per_page: 30 }),
+    api.listIssues({ state: "closed", per_page: 20 }),
+  ]);
+
+  allIssues = [...openData, ...closedData];
 } catch (e) {
   error = e.message;
 }
@@ -21,9 +25,7 @@ function formatDate(dateString) {
   }).format(new Date(dateString));
 }
 
-// Helper to determine text color based on background luminance
 function getContrastColor(hexcolor) {
-  // Convert hex to RGB
   const r = parseInt(hexcolor.substr(0, 2), 16);
   const g = parseInt(hexcolor.substr(2, 2), 16);
   const b = parseInt(hexcolor.substr(4, 2), 16);
@@ -53,43 +55,61 @@ function getContrastColor(hexcolor) {
 
   <div class="ui relaxed divided list selection large">
     {
-      issues.map((issue) => (
-        <a href={`/issues/${issue.number}`} class="item">
-          <i
-            class="large middle aligned exclamation circle icon"
-            style="color: #db2828;"
-          />
-          <div class="content">
-            <div class="header" style="margin-bottom: 0.3em; font-size: 1.1em;">
-              {issue.title}
-              {issue.labels.map((label) => (
+      allIssues.map((issue) => {
+        const isOpen = issue.state === "open";
+
+        return (
+          <a
+            href={`/issues/${issue.number}`}
+            class="item"
+            style={!isOpen ? "opacity: 0.75;" : ""}
+          >
+            <i
+              class={`large middle aligned ${isOpen ? "exclamation circle" : "check circle"} icon`}
+              style={`color: ${isOpen ? "#db2828" : "#21ba45"};`}
+            />
+            <div class="content">
+              <div
+                class="header"
+                style="margin-bottom: 0.3em; font-size: 1.1em;"
+              >
                 <span
-                  class="ui label tiny"
-                  style={`background-color: #${label.color}; color: ${getContrastColor(label.color)}; margin-left: 0.5em;`}
+                  style={
+                    !isOpen ? "text-decoration: line-through; color: #666;" : ""
+                  }
                 >
-                  {label.name}
+                  {issue.title}
                 </span>
-              ))}
+                {issue.labels.map((label) => (
+                  <span
+                    class="ui label tiny"
+                    style={`background-color: #${label.color}; color: ${getContrastColor(label.color)}; margin-left: 0.5em;`}
+                  >
+                    {label.name}
+                  </span>
+                ))}
+              </div>
+              <div class="description">
+                #{issue.number} {isOpen ? "άνοιξε" : "έκλεισε"} από{" "}
+                <strong>{issue.user.login}</strong> •{" "}
+                {formatDate(issue.created_at)}
+                <span style="float: right; color: #666;">
+                  <i class="comment icon" /> {issue.comments}
+                </span>
+              </div>
             </div>
-            <div class="description">
-              #{issue.number} άνοιξε από <strong>{issue.user.login}</strong> •{" "}
-              {formatDate(issue.created_at)}
-              <span style="float: right; color: #666;">
-                <i class="comment icon" /> {issue.comments}
-              </span>
-            </div>
-          </div>
-        </a>
-      ))
+          </a>
+        );
+      })
     }
   </div>
 
   {
-    issues.length === 0 && !error && (
+    allIssues.length === 0 && !error && (
       <div class="ui placeholder segment">
         <div class="ui icon header">
           <i class="check circle outline icon" />
-          Δεν υπάρχουν ανοιχτά προβλήματα.
+          Δεν υπάρχουν ζητήματα.
         </div>
       </div>
     )
