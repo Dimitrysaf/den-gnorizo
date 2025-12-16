@@ -3,8 +3,8 @@ import Layout from "../layouts/Layout.astro";
 import Tools from "../components/Tools.astro";
 import DocNode from "../components/DocNode.astro";
 import { createGitHubAPI, resetCache } from "../lib/github.fetch";
-import { marked } from "marked";
 import { parseMarkdownSafe } from "../lib/markdown";
+import { handleError } from "../lib/errors";
 
 if (Astro.url.searchParams.get("refresh") === "true") {
   resetCache();
@@ -19,8 +19,8 @@ try {
   const metaJson = JSON.parse(rawMeta);
   documentStructure = metaJson.structure || [];
 
-  const nodesWithFiles = [];
-  function collectNodes(nodes) {
+  const nodesWithFiles: any[] = [];
+  function collectNodes(nodes: any[]) {
     if (!nodes) return;
     for (const node of nodes) {
       if (node.file) nodesWithFiles.push(node);
@@ -30,23 +30,35 @@ try {
 
   collectNodes(documentStructure);
 
-  await Promise.all(
-    nodesWithFiles.map(async (node) => {
-      try {
-        const rawMarkdown = await api.getFileContent(node.file);
+  const fileLoadPromises = nodesWithFiles.map(async (node) => {
+    try {
+      const rawMarkdown = await api.getFileContent(node.file);
+      const cleanMarkdown = rawMarkdown.replace(/^---[\s\S]+?---/, "").trim();
+      node.htmlContent = parseMarkdownSafe(cleanMarkdown);
+    } catch (err) {
+      console.error(`Error loading file ${node.file}:`, err);
+      node.htmlContent = `
+        <div class="ui warning message">
+          <i class="exclamation triangle icon"></i>
+          <div class="content">
+            <div class="header">Σφάλμα φόρτωσης περιεχομένου</div>
+            <p>Το περιεχόμενο "${node.name}" δεν ήταν δυνατό να φορτωθεί προσωρινά.</p>
+          </div>
+        </div>
+      `;
+    }
+  });
 
-        const cleanMarkdown = rawMarkdown.replace(/^---[\s\S]+?---/, "").trim();
-
-        node.htmlContent = parseMarkdownSafe(cleanMarkdown);
-      } catch (err) {
-        console.error(`Σφάλμα ${node.file}`, err);
-        node.htmlContent = `<p style="color:red">Κάτι πήγε πολύ στραβά, δες την κονσόλα για μυνήματα σφάλματος.</p>`;
-      }
-    }),
-  );
+  await Promise.race([
+    Promise.all(fileLoadPromises),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Timeout loading files")), 30000),
+    ),
+  ]);
 } catch (e) {
-  console.error(e);
-  error = e.message;
+  console.error("Index page error:", e);
+  const errorInfo = handleError(e);
+  error = errorInfo.message;
 }
 ---
 
@@ -64,11 +76,23 @@ try {
       <div class="ui negative icon message">
         <i class="exclamation circle icon" />
         <div class="content">
+          <div class="header">Σφάλμα φόρτωσης</div>
           <p>{error}</p>
         </div>
       </div>
     )
   }
 
-  {documentStructure.map((node) => <DocNode node={node} />)}
+  {
+    documentStructure.length > 0
+      ? documentStructure.map((node) => <DocNode node={node} />)
+      : !error && (
+          <div class="ui placeholder segment">
+            <div class="ui icon header">
+              <i class="file outline icon" />
+              Δεν υπάρχει περιεχόμενο διαθέσιμο.
+            </div>
+          </div>
+        )
+  }
 </Layout>
