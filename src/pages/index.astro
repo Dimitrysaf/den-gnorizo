@@ -34,7 +34,7 @@ try {
     try {
       const rawMarkdown = await api.getFileContent(node.file);
       const cleanMarkdown = rawMarkdown.replace(/^---[\s\S]+?---/, "").trim();
-      node.htmlContent = parseMarkdownSafe(cleanMarkdown);
+      node.htmlContent = await parseMarkdownSafe(cleanMarkdown);
     } catch (err) {
       console.error(`Error loading file ${node.file}:`, err);
       node.htmlContent = `
