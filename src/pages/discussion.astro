@@ -1,7 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { createGitHubAPI } from "../lib/github.fetch";
-import { formatDateCompactCompact, truncateText } from "../lib/utils";
+import { formatDateCompact, truncateText } from "../lib/utils";
 
 const api = createGitHubAPI();
 let pinned = [];

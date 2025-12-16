@@ -178,17 +178,6 @@ const uniqueId = `tools-${Math.random().toString(36).substr(2, 9)}`;
             $errorMessage.hide();
         });
 
-        function formatDateCompact(dateString) {
-            const date = new Date(dateString);
-            return new Intl.DateTimeFormat("el-GR", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-            }).format(date);
-        }
-
         $refreshButton.on("click", async function () {
             setLoading(true);
             $errorMessage.hide();

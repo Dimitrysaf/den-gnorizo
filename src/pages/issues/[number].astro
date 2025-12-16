@@ -3,6 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import { createGitHubAPI } from "../../lib/github.fetch";
 import { marked } from "marked";
 import { parseMarkdownSafe } from "../../lib/markdown";
+import { formatDateCompact, truncateText } from "../../lib/utils";
 
 const { number } = Astro.params;
 const api = createGitHubAPI();

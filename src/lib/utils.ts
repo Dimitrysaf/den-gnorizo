@@ -3,7 +3,7 @@
 /**
  * Format a date string to Greek locale
  */
-export function formatDateCompact(dateString: string, options?: Intl.DateTimeFormatOptions): string {
+export function formatDate(dateString: string, options?: Intl.DateTimeFormatOptions): string {
   const defaultOptions: Intl.DateTimeFormatOptions = {
     dateStyle: "full",
     timeStyle: "short",
@@ -18,7 +18,7 @@ export function formatDateCompact(dateString: string, options?: Intl.DateTimeFor
  * Format date for list views (shorter format)
  */
 export function formatDateShort(dateString: string): string {
-  return formatDateCompact(dateString, {
+  return formatDate(dateString, {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -29,7 +29,7 @@ export function formatDateShort(dateString: string): string {
  * Format date for compact views (no year unless different)
  */
 export function formatDateCompact(dateString: string): string {
-  return formatDateCompact(dateString, {
+  return formatDate(dateString, {
     day: "numeric",
     month: "long",
   });
