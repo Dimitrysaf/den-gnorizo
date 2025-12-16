@@ -1,10 +1,107 @@
 ---
-import ErrorView from '../components/ErrorView.astro';
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/Layout.astro";
+import { createGitHubAPI } from "../lib/github.fetch";
 
-return Astro.redirect('/501');
+const api = createGitHubAPI();
+let prs = [];
+let error = null;
 
+try {
+    // Fetch all PRs (open and closed) to show history
+    prs = await api.listPullRequests({ state: "all", per_page: 30 });
+} catch (e) {
+    error = e.message;
+}
+
+function formatDate(dateString) {
+    return new Intl.DateTimeFormat("el-GR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+    }).format(new Date(dateString));
+}
+
+function getPRStatus(pr) {
+    if (pr.merged_at)
+        return {
+            color: "purple",
+            icon: "git pull request",
+            text: "Συγχωνεύθηκε",
+        };
+    if (pr.state === "closed")
+        return { color: "red", icon: "times circle", text: "Κλειστό" };
+    return { color: "green", icon: "git pull request", text: "Ανοιχτό" };
+}
 ---
+
 <Layout>
-  
+    <h1 class="ui header">
+        <i class="code branch icon"></i>
+        <div class="content">
+            Προτάσεις (Pull Requests)
+            <div class="sub header">
+                Αλλαγές που προτάθηκαν από τους πολίτες
+            </div>
+        </div>
+    </h1>
+    <div class="ui divider"></div>
+
+    {
+        error && (
+            <div class="ui negative message">
+                <div class="header">Σφάλμα</div>
+                <p>{error}</p>
+            </div>
+        )
+    }
+
+    <div class="ui relaxed divided list selection large">
+        {
+            prs.map((pr) => {
+                const status = getPRStatus(pr);
+                return (
+                    <a href={`/prs/${pr.number}`} class="item">
+                        <i
+                            class={`large middle aligned ${status.icon} icon`}
+                            style={`color: ${status.color === "purple" ? "#a333c8" : status.color === "red" ? "#db2828" : "#21ba45"};`}
+                        />
+                        <div class="content">
+                            <div
+                                class="header"
+                                style="margin-bottom: 0.3em; font-size: 1.1em;"
+                            >
+                                {pr.title}
+                                <div
+                                    class={`ui horizontal label ${status.color} tiny`}
+                                    style="margin-left: 0.5em;"
+                                >
+                                    {status.text}
+                                </div>
+                            </div>
+                            <div class="description">
+                                #{pr.number} από{" "}
+                                <strong>{pr.user.login}</strong> •{" "}
+                                {formatDate(pr.created_at)}
+                                <span style="float: right; color: #666;">
+                                    <i class="code icon" /> {pr.base.ref} &larr;{" "}
+                                    {pr.head.ref}
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                );
+            })
+        }
+    </div>
+
+    {
+        prs.length === 0 && !error && (
+            <div class="ui placeholder segment">
+                <div class="ui icon header">
+                    <i class="code branch icon" />
+                    Δεν υπάρχουν προτάσεις αλλαγών.
+                </div>
+            </div>
+        )
+    }
 </Layout>

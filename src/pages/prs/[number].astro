@@ -1,0 +1,284 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { createGitHubAPI } from "../../lib/github.fetch";
+import { marked } from "marked";
+
+const { number } = Astro.params;
+const api = createGitHubAPI();
+
+let pr = null;
+let files = [];
+let comments = [];
+let error = null;
+
+try {
+    if (number) {
+        const [prData, filesData, commentsData] = await Promise.all([
+            api.getPullRequest(Number(number)),
+            api.listPullRequestFiles(Number(number)),
+            api.listIssueComments(Number(number)), // PRs are Issues for comments
+        ]);
+        pr = prData;
+        files = filesData;
+        comments = commentsData;
+    }
+} catch (e) {
+    error = e.message;
+}
+
+function formatDate(dateString) {
+    return new Intl.DateTimeFormat("el-GR", {
+        dateStyle: "full",
+        timeStyle: "short",
+    }).format(new Date(dateString));
+}
+
+function getPRStatus(pr) {
+    if (pr.merged)
+        return {
+            color: "purple",
+            icon: "git pull request",
+            text: "Συγχωνεύθηκε",
+        };
+    if (pr.state === "closed")
+        return { color: "red", icon: "times circle", text: "Κλειστό" };
+    return { color: "green", icon: "git pull request", text: "Ανοιχτό" };
+}
+---
+
+<Layout>
+    <div class="ui breadcrumb" style="margin-bottom: 2rem;">
+        <a href="/prs" class="section">Προτάσεις</a>
+        <div class="divider">/</div>
+        <div class="active section">#{number}</div>
+    </div>
+
+    {
+        error && (
+            <div class="ui negative message">
+                <div class="header">Σφάλμα</div>
+                <p>{error}</p>
+            </div>
+        )
+    }
+
+    {
+        pr && (
+            <div>
+                {/* HEADER INFO */}
+                <div class="ui segment raised padded">
+                    {(() => {
+                        const status = getPRStatus(pr);
+                        return (
+                            <div
+                                class={`ui ribbon label ${status.color} large`}
+                            >
+                                <i class={`${status.icon} icon`} />{" "}
+                                {status.text}
+                            </div>
+                        );
+                    })()}
+
+                    <h1
+                        class="ui header"
+                        style="word-break: break-word; font-size: 1.8em; margin-top: 1rem;"
+                    >
+                        {pr.title}
+                        <div class="sub header" style="margin-top: 0.5rem;">
+                            Θέλει να συγχωνεύσει {pr.commits} commits στο{" "}
+                            <code style="background: #f0f0f0; padding: 2px 5px; border-radius: 3px;">
+                                {pr.base.ref}
+                            </code>{" "}
+                            από το{" "}
+                            <code style="background: #f0f0f0; padding: 2px 5px; border-radius: 3px;">
+                                {pr.head.ref}
+                            </code>
+                        </div>
+                    </h1>
+
+                    <div class="ui divider hidden" />
+
+                    <div class="ui stackable grid vertical aligned">
+                        <div class="eight wide column">
+                            <div class="ui list horizontal">
+                                <div class="item">
+                                    <img
+                                        class="ui avatar image"
+                                        src={pr.user.avatar_url}
+                                    />
+                                    <div class="content">
+                                        <div class="header">
+                                            {pr.user.login}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="item" style="color: #666;">
+                                    <i class="calendar alternate outline icon" />
+                                    {formatDate(pr.created_at)}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="eight wide column right aligned mobile-left">
+                            <div class="ui tiny statistics">
+                                <div
+                                    class="green statistic"
+                                    style="margin: 0 10px;"
+                                >
+                                    <div class="value">+{pr.additions}</div>
+                                </div>
+                                <div
+                                    class="red statistic"
+                                    style="margin: 0 10px;"
+                                >
+                                    <div class="value">-{pr.deletions}</div>
+                                </div>
+                                <div
+                                    class="grey statistic"
+                                    style="margin: 0 10px;"
+                                >
+                                    <div class="value">{pr.changed_files}</div>
+                                    <div class="label">Αρχεία</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ui divider" />
+
+                    <div
+                        class="ui content text-body"
+                        style="font-size: 1.15em; line-height: 1.6;"
+                    >
+                        <div
+                            set:html={marked.parse(
+                                pr.body || "*(Δεν υπάρχει περιγραφή)*",
+                            )}
+                        />
+                    </div>
+                </div>
+
+                {/* FILES CHANGED (DIFFS) */}
+                <h3 class="ui header attached top">
+                    <i class="file code outline icon" />
+                    Αλλαγές Αρχείων
+                </h3>
+                <div class="ui attached segment" style="background: #f9fafb;">
+                    {files.map((file) => (
+                        <div class="ui segment">
+                            <div class="ui top attached label clearfix">
+                                <i class="file outline icon" />
+                                <span style="word-break: break-all; font-family: monospace;">
+                                    {file.filename}
+                                </span>
+
+                                <div
+                                    class="ui label small right floated"
+                                    style="margin-top: -2px;"
+                                >
+                                    <span class="ui green text">
+                                        +{file.additions}
+                                    </span>
+                                    <span style="margin: 0 4px; color: #ccc;">
+                                        /
+                                    </span>
+                                    <span class="ui red text">
+                                        -{file.deletions}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="code-view" style="margin-top: 1em;">
+                                {file.patch ? (
+                                    <pre>
+                                        <code class="diff">{file.patch}</code>
+                                    </pre>
+                                ) : (
+                                    <div class="ui ignored message">
+                                        Το αρχείο είναι δυαδικό ή πολύ μεγάλο
+                                        για προβολή.
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* COMMENTS SECTION */}
+                <div
+                    class="ui large threaded comments"
+                    style="max-width: 100%; margin-top: 3rem;"
+                >
+                    <h3 class="ui dividing header">
+                        Συζήτηση ({comments.length})
+                    </h3>
+
+                    {comments.map((comment) => (
+                        <div class="comment">
+                            <a class="avatar">
+                                <img src={comment.user.avatar_url} />
+                            </a>
+                            <div class="content">
+                                <a class="author">{comment.user.login}</a>
+                                <div class="metadata">
+                                    <span class="date">
+                                        {formatDate(comment.created_at)}
+                                    </span>
+                                </div>
+                                <div class="text">
+                                    <div
+                                        set:html={marked.parse(comment.body)}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+
+                    {comments.length === 0 && (
+                        <div class="ui ignored info message">
+                            Δεν υπάρχουν σχόλια σε αυτή την πρόταση.
+                        </div>
+                    )}
+                </div>
+
+                <div class="ui divider" />
+
+                <div style="text-align: center; margin-bottom: 3rem;">
+                    <a
+                        href={pr.html_url}
+                        target="_blank"
+                        class="ui primary button"
+                    >
+                        <i class="github icon" />
+                        Προβολή στο GitHub
+                    </a>
+                </div>
+            </div>
+        )
+    }
+</Layout>
+
+<style>
+    .text-body :global(img) {
+        max-width: 100%;
+        height: auto;
+        border-radius: 5px;
+    }
+
+    pre {
+        background: #f8f9fa;
+        padding: 1em;
+        border-radius: 4px;
+        overflow-x: auto;
+        border: 1px solid #e9ecef;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.85em;
+        white-space: pre;
+    }
+
+    @media (max-width: 767px) {
+        .mobile-left {
+            text-align: left !important;
+            margin-top: 1rem;
+        }
+    }
+</style>
