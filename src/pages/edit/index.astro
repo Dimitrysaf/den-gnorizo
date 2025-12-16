@@ -3,14 +3,12 @@ import Layout from "../../layouts/Layout.astro";
 import EditableNode from "../../components/EditableNode.astro";
 import { createGitHubAPI } from "../../lib/github.fetch";
 
-// 1. Security Check
 const sessionCookie = Astro.cookies.get("gh_session");
 if (!sessionCookie || !sessionCookie.value) {
     return Astro.redirect("/403");
 }
 const user = JSON.parse(sessionCookie.value);
 
-// 2. Fetch Structure
 const api = createGitHubAPI();
 let documentStructure = [];
 let error = null;
@@ -25,144 +23,322 @@ try {
 ---
 
 <Layout>
-    {/* SortableJS CDN */}
-    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script
+        is:inline
+        src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"
+    ></script>
 
     <div class="ui container">
         <h1 class="ui header">
-            <i class="sitemap icon"></i>
+            <i class="edit icon"></i>
             <div class="content">
-                Επεξεργασία Δομής
-                <div class="sub header">Αλλάξτε τη σειρά και τους τίτλους των άρθρων</div>
+                Επεξεργασία Συντάγματος
+                <div class="sub header">Τροποποίηση δομής και περιεχομένου</div>
             </div>
         </h1>
 
-        <div class="ui top attached segment secondary">
-            <div class="ui toggle checkbox" id="mode-toggle">
-                <input type="checkbox" name="public" checked>
-                <label>Λειτουργία Ταξινόμησης (Drag & Drop)</label>
+        {/* TOOLBAR */}
+        <div class="ui secondary menu stackable">
+            <div class="item">
+                <div class="ui toggle checkbox" id="edit-mode-toggle">
+                    <input type="checkbox" name="public" />
+                    <label>Λειτουργία Επεξεργασίας</label>
+                </div>
             </div>
-            
-            <div class="right menu" style="float: right;">
-                <button class="ui button green" id="save-structure">
-                    <i class="save icon"></i> Αποθήκευση Δομής
+            <div class="right menu">
+                <button class="ui button primary" id="save-structure-btn">
+                    <i class="save icon"></i> Αποθήκευση & Υποβολή
                 </button>
             </div>
         </div>
 
-        <div class="ui attached segment">
-            {error && <div class="ui negative message">{error}</div>}
+        {error && <div class="ui negative message">{error}</div>}
 
+        {/* MAIN LIST */}
+        <div class="ui segment basic" style="padding: 0;">
             <div class="ui list" id="root-sortable">
-                {documentStructure.map((node, i) => (
-                    <EditableNode node={node} index={i} />
-                ))}
+                {
+                    documentStructure.map((node, i) => (
+                        <EditableNode node={node} index={i} />
+                    ))
+                }
             </div>
+        </div>
+
+        {/* JSON PREVIEW AREA */}
+        <div
+            class="ui segment"
+            id="json-preview-container"
+            style="background: #f8f9fa; margin-top: 2rem;"
+        >
+            <h4 class="ui header">
+                <i class="code icon"></i> Live Προεπισκόπηση
+            </h4>
+            <pre
+                id="json-preview-content"
+                style="overflow: auto; max-height: 400px; font-size: 0.85em; background: white; padding: 1em; border: 1px solid #ddd; border-radius: 4px;">
+            </pre>
+        </div>
+    </div>
+
+    {/* EDIT CONTENT MODAL */}
+    <div class="ui modal" id="article-modal">
+        <i class="close icon"></i>
+        <div class="header">Επεξεργασία Άρθρου</div>
+        <div class="content">
+            <div class="ui form">
+                <div class="field disabled">
+                    <label>Αρχείο</label>
+                    <input type="text" id="modal-filename" readonly />
+                </div>
+                <div class="field">
+                    <label>Περιεχόμενο</label>
+                    <textarea
+                        id="modal-content"
+                        style="font-family: monospace; min-height: 400px;"
+                    ></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="actions">
+            <div class="ui black deny button">Ακύρωση</div>
+            <button
+                class="ui positive right labeled icon button"
+                id="save-article-btn"
+            >
+                Αποθήκευση Αλλαγών
+                <i class="checkmark icon"></i>
+            </button>
         </div>
     </div>
 </Layout>
 
-<script is:inline define:vars={{ userLogin: user.login }}>
-    document.addEventListener("DOMContentLoaded", function() {
-        const rootEl = document.getElementById('root-sortable');
-        const nestedEls = document.querySelectorAll('.nested-sortable');
-        const modeToggle = document.getElementById('mode-toggle');
-        const inputs = document.querySelectorAll('input');
-        const saveBtn = document.getElementById('save-structure');
+<style>
+    /* Drag & Drop Styling */
+    .drag-handle {
+        display: block;
+    }
+    .node-number,
+    .node-name {
+        pointer-events: none;
+        border: none;
+        background: transparent;
+        opacity: 0.8;
+    }
 
-        // 1. Initialize SortableJS
-        // Function to apply sortable to a list
+    .editing-mode .drag-handle {
+        display: none !important;
+    }
+    .editing-mode .node-number,
+    .editing-mode .node-name {
+        pointer-events: auto;
+        border-bottom: 1px solid #ddd;
+        opacity: 1;
+    }
+    .editing-mode .ui.segment {
+        border: 1px solid #2185d0;
+    }
+</style>
+
+<script is:inline>
+    $(function () {
+        const rootEl = document.getElementById("root-sortable");
+        const nestedEls = document.querySelectorAll(".nested-sortable");
+        const toggle = $("#edit-mode-toggle");
+        const container = $(".ui.container");
+
+        // 1. Sortable Logic with Validation
         const initSortable = (el) => {
             new Sortable(el, {
-                group: 'nested', // allow dragging between lists
-                animation: 150,
+                group: "nested",
+                animation: 0, // Disable animation
+                handle: ".drag-handle",
                 fallbackOnBody: true,
                 swapThreshold: 0.65,
-                handle: '.drag-handle', // Only drag via handle
-                disabled: false 
+                direction: "vertical", // Suggest vertical movement
+                onEnd: function () {
+                    updatePreview();
+                },
+                // === REAL-TIME VALIDATION ===
+                onMove: function (evt) {
+                    const draggedType = evt.dragged.dataset.type;
+
+                    // Find parent type of the target list
+                    const targetList = evt.to;
+                    const parentItem = targetList.closest(".node-item");
+                    const parentType = parentItem
+                        ? parentItem.dataset.type
+                        : "root";
+
+                    // Define strict hierarchy ranks
+                    const rank = {
+                        root: 0,
+                        title: 10,
+                        chapter: 20,
+                        section: 30, // Section/Part roughly same level
+                        article: 40,
+                    };
+
+                    const draggedRank = rank[draggedType] || 99;
+                    const parentRank = rank[parentType] || 0;
+
+                    // Rule 1: Root list can ONLY contain Titles
+                    if (parentType === "root" && draggedType !== "title") {
+                        return false; // Cancel move
+                    }
+
+                    // Rule 2: Articles cannot contain anything
+                    if (parentType === "article") {
+                        return false;
+                    }
+
+                    // Rule 3: Hierarchy enforcement
+                    // A child must have a higher rank number than its parent
+                    // e.g. Title(10) -> Article(40) OK
+                    // e.g. Article(40) -> Title(10) FAIL
+                    if (draggedRank <= parentRank) {
+                        return false;
+                    }
+
+                    return true; // Allow move
+                },
             });
         };
 
         initSortable(rootEl);
-        nestedEls.forEach(el => initSortable(el));
+        nestedEls.forEach((el) => initSortable(el));
 
-        // 2. Toggle Mode Logic
-        $('.ui.checkbox').checkbox({
-            onChecked: () => {
-                // Drag Mode ON: Enable handles, Disable inputs
-                $('.drag-handle').show();
-                $('input.node-name, input.node-number').prop('disabled', true).addClass('disabled');
-            },
-            onUnchecked: () => {
-                // Edit Mode ON: Disable handles, Enable inputs
-                $('.drag-handle').hide();
-                $('input.node-name, input.node-number').prop('disabled', false).removeClass('disabled');
-            }
+        // 2. Mode Toggle
+        toggle.checkbox({
+            onChecked: () => container.addClass("editing-mode"),
+            onUnchecked: () => container.removeClass("editing-mode"),
         });
 
-        // Initialize state (Drag Mode default)
-        $('input.node-name, input.node-number').prop('disabled', true);
-
-
-        // 3. Serialization Logic (DOM -> JSON)
+        // 3. Serialize Logic
         const serializeNode = (domItem) => {
-            const type = domItem.getAttribute('data-type');
-            const file = domItem.getAttribute('data-file');
-            
-            // Get inputs within this item (scoped)
-            const numberInput = domItem.querySelector(':scope > .content > .form .node-number');
-            const nameInput = domItem.querySelector(':scope > .content > .form .node-name');
-            const listContainer = domItem.querySelector(':scope > .content > .nested-sortable');
+            const type = domItem.getAttribute("data-type");
+            const file = domItem.getAttribute("data-file");
+            const numberInput = domItem.querySelector(
+                ":scope > .content > .segment .node-number",
+            );
+            const nameInput = domItem.querySelector(
+                ":scope > .content > .segment .node-name",
+            );
+            const listContainer = domItem.querySelector(
+                ":scope > .content > .nested-sortable",
+            );
 
             const node = {
                 type: type,
                 number: numberInput ? parseInt(numberInput.value) : 0,
-                name: nameInput ? nameInput.value : "Untitled",
+                name: nameInput ? nameInput.value : "",
             };
 
             if (file) node.file = file;
 
-            // Recurse children
             if (listContainer && listContainer.children.length > 0) {
-                node.children = Array.from(listContainer.children).map(child => serializeNode(child));
+                node.children = Array.from(listContainer.children).map(
+                    (child) => serializeNode(child),
+                );
             }
-
             return node;
         };
 
-        // 4. Save Action
-        saveBtn.addEventListener('click', async () => {
-            saveBtn.classList.add('loading', 'disabled');
+        const getFullStructure = () => {
+            return Array.from(rootEl.children).map((child) =>
+                serializeNode(child),
+            );
+        };
+
+        const updatePreview = () => {
+            const structure = getFullStructure();
+            const json = JSON.stringify(
+                { title: "Σύνταγμα", structure },
+                null,
+                4,
+            );
+            $("#json-preview-content").text(json);
+        };
+
+        updatePreview();
+        $("#root-sortable").on("input", "input", updatePreview);
+
+        // 4. Save Structure
+        $("#save-structure-btn").on("click", async function () {
+            const btn = $(this);
+            btn.addClass("loading disabled");
 
             try {
-                // Rebuild the full JSON
-                const newStructure = Array.from(rootEl.children).map(child => serializeNode(child));
+                const structure = getFullStructure();
                 const fullMetadata = {
-                    title: "Σύνταγμα της Ελλάδας", // Or fetch existing title
-                    structure: newStructure
+                    title: "Σύνταγμα της Ελλάδας",
+                    structure,
                 };
 
-                // Send to API
-                const res = await fetch('/api/propose', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                const res = await fetch("/api/propose", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        filePath: 'metadata.json',
-                        content: JSON.stringify(fullMetadata, null, 4), // Pretty print
-                        message: `Αναδιάρθρωση δομής από @${userLogin}`
-                    })
+                        filePath: "metadata.json",
+                        content: JSON.stringify(fullMetadata, null, 4),
+                        message: "Αναδιάρθρωση δομής (Metadata Update)",
+                    }),
                 });
 
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.error || "Unknown Error");
+                if (!res.ok) throw new Error(data.error);
 
-                // Success
                 window.location.href = data.pr_url;
-
             } catch (err) {
-                console.error(err);
-                alert("Σφάλμα αποθήκευσης: " + err.message);
-                saveBtn.classList.remove('loading', 'disabled');
+                alert("Σφάλμα Δομής: " + err.message);
+                btn.removeClass("loading disabled");
+            }
+        });
+
+        // 5. Article Modal Logic
+        $(".edit-content-btn").on("click", async function () {
+            const file = $(this).data("file");
+            const modal = $("#article-modal");
+            $("#modal-filename").val(file);
+            $("#modal-content").val("Φόρτωση...");
+            modal.modal("show");
+
+            try {
+                const res = await fetch(`/api/file?path=${file}`);
+                const data = await res.json();
+                if (data.content) {
+                    const clean = data.content
+                        .replace(/^---[\s\S]+?---/, "")
+                        .trim();
+                    $("#modal-content").val(clean);
+                }
+            } catch (e) {
+                $("#modal-content").val("Σφάλμα φόρτωσης.");
+            }
+        });
+
+        $("#save-article-btn").on("click", async function () {
+            const btn = $(this);
+            btn.addClass("loading disabled");
+            const file = $("#modal-filename").val();
+            const content = $("#modal-content").val();
+
+            try {
+                const res = await fetch("/api/propose", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        filePath: file,
+                        content: content,
+                        message: `Ενημέρωση περιεχομένου: ${file}`,
+                    }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                window.location.href = data.pr_url;
+            } catch (err) {
+                alert("Error: " + err.message);
+                btn.removeClass("loading disabled");
             }
         });
     });
