@@ -7,7 +7,6 @@ let prs = [];
 let error = null;
 
 try {
-    // Fetch all PRs (open and closed) to show history
     prs = await api.listPullRequests({ state: "all", per_page: 30 });
 } catch (e) {
     error = e.message;
@@ -25,11 +24,10 @@ function getPRStatus(pr) {
     if (pr.merged_at)
         return {
             color: "purple",
-            // icon: "git pull request", // Replaced per request
             text: "Συγχωνεύθηκε",
         };
-    if (pr.state === "closed") return { color: "red", text: "Κλειστό" }; // Icon handled in template
-    return { color: "green", text: "Ανοιχτό" }; // Icon handled in template
+    if (pr.state === "closed") return { color: "red", text: "Κλειστό" };
+    return { color: "green", text: "Ανοιχτό" };
 }
 ---
 
@@ -37,7 +35,7 @@ function getPRStatus(pr) {
     <h1 class="ui header">
         <i class="file alternate outline icon"></i>
         <div class="content">
-            Προτάσεις (Pull Requests)
+            Προτάσεις
             <div class="sub header">
                 Αλλαγές που προτάθηκαν από τους πολίτες
             </div>

@@ -66,7 +66,6 @@ function getPRStatus(pr) {
         pr && (
             <div>
                 <div class="ui segment raised">
-                    {/* STATUS RIBBON */}
                     {(() => {
                         const status = getPRStatus(pr);
                         return (
@@ -88,7 +87,6 @@ function getPRStatus(pr) {
 
                     <div class="ui divider" />
 
-                    {/* META LIST */}
                     <div class="ui relaxed list">
                         <div class="item">
                             <i class="user icon" />
@@ -123,7 +121,6 @@ function getPRStatus(pr) {
                         </div>
                     </div>
 
-                    {/* DESCRIPTION BODY */}
                     {pr.body && (
                         <div
                             class="ui content text-body"
@@ -135,7 +132,6 @@ function getPRStatus(pr) {
 
                     <div class="ui divider" />
 
-                    {/* STATISTICS */}
                     <div class="ui three tiny statistics">
                         <div class="green statistic">
                             <div class="value">+{pr.additions}</div>
@@ -152,7 +148,6 @@ function getPRStatus(pr) {
                     </div>
                 </div>
 
-                {/* FILES CHANGED */}
                 <h3 class="ui header">Αλλαγές Αρχείων</h3>
                 <div class="ui segments">
                     {files.map((file) => (
@@ -195,7 +190,6 @@ function getPRStatus(pr) {
                     ))}
                 </div>
 
-                {/* COMMENTS SECTION */}
                 <div
                     class="ui large threaded comments"
                     style="max-width: 100%; margin-top: 3rem;"
