@@ -14,19 +14,6 @@ interface GitHubApiOptions {
 
 const CACHE = new Map<string, { data: any; timestamp: number }>();
 const CACHE_TTL = 5 * 60 * 1000;
-const MAX_CACHE_SIZE = 100; // Prevent unlimited growth
-
-// Cache cleanup function to prevent memory leaks
-function cleanupCache() {
-  if (CACHE.size <= MAX_CACHE_SIZE) return;
-
-  // Remove oldest entries when cache is too large
-  const entries = Array.from(CACHE.entries());
-  entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
-
-  const entriesToRemove = entries.slice(0, entries.length - MAX_CACHE_SIZE);
-  entriesToRemove.forEach(([key]) => CACHE.delete(key));
-}
 
 class GitHubAPI {
   private config: GitHubConfig;
@@ -81,7 +68,6 @@ class GitHubAPI {
 
       if (method === 'GET') {
         CACHE.set(cacheKey, { data, timestamp: now });
-        cleanupCache(); // Clean up old entries if cache is too large
       }
 
       return data;
@@ -169,7 +155,6 @@ class GitHubAPI {
 
     return data.content;
   }
-
 
   async listDirectory(path: string = '', ref?: string) {
     const data = await this.getContents(path, ref);
