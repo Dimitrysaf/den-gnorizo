@@ -154,20 +154,22 @@ class GitHubAPI {
   async getFileContent(path: string, ref?: string) {
     const data = await this.getContents(path, ref);
 
-    if (Array.isArray(data)) throw new Error('Path is a directory, not a file');
-    if (data.type !== 'file') throw new Error(`Path is a ${data.type}, not a file`);
+    if (Array.isArray(data)) {
+      throw new Error('Path is a directory, not a file');
+    }
+
+    if (data.type !== 'file') {
+      throw new Error(`Path is a ${data.type}, not a file`);
+    }
 
     if (data.encoding === 'base64' && data.content) {
-      const binaryString = atob(data.content.replace(/\n/g, ''));
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-      return new TextDecoder('utf-8').decode(bytes);
+      const cleanContent = data.content.replace(/\n/g, '');
+      return Buffer.from(cleanContent, 'base64').toString('utf-8');
     }
 
     return data.content;
   }
+
 
   async listDirectory(path: string = '', ref?: string) {
     const data = await this.getContents(path, ref);
