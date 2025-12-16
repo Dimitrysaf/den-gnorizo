@@ -16,7 +16,7 @@ try {
         const [prData, filesData, commentsData] = await Promise.all([
             api.getPullRequest(Number(number)),
             api.listPullRequestFiles(Number(number)),
-            api.listIssueComments(Number(number)), // PRs are Issues for comments
+            api.listIssueComments(Number(number)),
         ]);
         pr = prData;
         files = filesData;
@@ -37,12 +37,12 @@ function getPRStatus(pr) {
     if (pr.merged)
         return {
             color: "purple",
-            icon: "git pull request",
+            icon: "shuffle",
             text: "Συγχωνεύθηκε",
         };
     if (pr.state === "closed")
         return { color: "red", icon: "times circle", text: "Κλειστό" };
-    return { color: "green", icon: "git pull request", text: "Ανοιχτό" };
+    return { color: "green", icon: "shuffle", text: "Ανοιχτό" };
 }
 ---
 
@@ -65,8 +65,8 @@ function getPRStatus(pr) {
     {
         pr && (
             <div>
-                {/* HEADER INFO */}
-                <div class="ui segment raised padded">
+                <div class="ui segment raised">
+                    {/* STATUS RIBBON */}
                     {(() => {
                         const status = getPRStatus(pr);
                         return (
@@ -79,95 +79,87 @@ function getPRStatus(pr) {
                         );
                     })()}
 
-                    <h1
+                    <h2
                         class="ui header"
-                        style="word-break: break-word; font-size: 1.8em; margin-top: 1rem;"
+                        style="word-break: break-word; margin-top: 1rem;"
                     >
                         {pr.title}
-                        <div class="sub header" style="margin-top: 0.5rem;">
-                            Θέλει να συγχωνεύσει {pr.commits} commits στο{" "}
-                            <code style="background: #f0f0f0; padding: 2px 5px; border-radius: 3px;">
-                                {pr.base.ref}
-                            </code>{" "}
-                            από το{" "}
-                            <code style="background: #f0f0f0; padding: 2px 5px; border-radius: 3px;">
-                                {pr.head.ref}
-                            </code>
+                    </h2>
+
+                    <div class="ui divider" />
+
+                    {/* META LIST */}
+                    <div class="ui relaxed list">
+                        <div class="item">
+                            <i class="user icon" />
+                            <div class="content">
+                                <div class="header">Προτάθηκε από</div>
+                                <div class="description">{pr.user.login}</div>
+                            </div>
                         </div>
-                    </h1>
-
-                    <div class="ui divider hidden" />
-
-                    <div class="ui stackable grid vertical aligned">
-                        <div class="eight wide column">
-                            <div class="ui list horizontal">
-                                <div class="item">
-                                    <img
-                                        class="ui avatar image"
-                                        src={pr.user.avatar_url}
-                                    />
-                                    <div class="content">
-                                        <div class="header">
-                                            {pr.user.login}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="item" style="color: #666;">
-                                    <i class="calendar alternate outline icon" />
+                        <div class="item">
+                            <i class="calendar icon" />
+                            <div class="content">
+                                <div class="header">Ημερομηνία</div>
+                                <div class="description">
                                     {formatDate(pr.created_at)}
                                 </div>
                             </div>
                         </div>
-                        <div class="eight wide column right aligned mobile-left">
-                            <div class="ui tiny statistics">
-                                <div
-                                    class="green statistic"
-                                    style="margin: 0 10px;"
-                                >
-                                    <div class="value">+{pr.additions}</div>
-                                </div>
-                                <div
-                                    class="red statistic"
-                                    style="margin: 0 10px;"
-                                >
-                                    <div class="value">-{pr.deletions}</div>
-                                </div>
-                                <div
-                                    class="grey statistic"
-                                    style="margin: 0 10px;"
-                                >
-                                    <div class="value">{pr.changed_files}</div>
-                                    <div class="label">Αρχεία</div>
+                        <div class="item">
+                            <i class="code branch icon" />
+                            <div class="content">
+                                <div class="header">Συγχώνευση</div>
+                                <div class="description">
+                                    <code style="background: #f0f0f0; padding: 2px 5px; border-radius: 3px;">
+                                        {pr.base.ref}
+                                    </code>{" "}
+                                    &larr;{" "}
+                                    <code style="background: #f0f0f0; padding: 2px 5px; border-radius: 3px;">
+                                        {pr.head.ref}
+                                    </code>
                                 </div>
                             </div>
                         </div>
                     </div>
 
+                    {/* DESCRIPTION BODY */}
+                    {pr.body && (
+                        <div
+                            class="ui content text-body"
+                            style="margin-top: 1.5rem; font-size: 1.1em; line-height: 1.6;"
+                        >
+                            <div set:html={marked.parse(pr.body)} />
+                        </div>
+                    )}
+
                     <div class="ui divider" />
 
-                    <div
-                        class="ui content text-body"
-                        style="font-size: 1.15em; line-height: 1.6;"
-                    >
-                        <div
-                            set:html={marked.parse(
-                                pr.body || "*(Δεν υπάρχει περιγραφή)*",
-                            )}
-                        />
+                    {/* STATISTICS */}
+                    <div class="ui three tiny statistics">
+                        <div class="green statistic">
+                            <div class="value">+{pr.additions}</div>
+                            <div class="label">Προσθήκες</div>
+                        </div>
+                        <div class="red statistic">
+                            <div class="value">-{pr.deletions}</div>
+                            <div class="label">Διαγραφές</div>
+                        </div>
+                        <div class="grey statistic">
+                            <div class="value">{pr.changed_files}</div>
+                            <div class="label">Αρχεία</div>
+                        </div>
                     </div>
                 </div>
 
-                {/* FILES CHANGED (DIFFS) */}
-                <h3 class="ui header attached top">
-                    <i class="file code outline icon" />
-                    Αλλαγές Αρχείων
-                </h3>
-                <div class="ui attached segment" style="background: #f9fafb;">
+                {/* FILES CHANGED */}
+                <h3 class="ui header">Αλλαγές Αρχείων</h3>
+                <div class="ui segments">
                     {files.map((file) => (
                         <div class="ui segment">
                             <div class="ui top attached label clearfix">
                                 <i class="file outline icon" />
-                                <span style="word-break: break-all; font-family: monospace;">
+                                <span style="word-break: break-all;">
                                     {file.filename}
                                 </span>
 
@@ -276,9 +268,12 @@ function getPRStatus(pr) {
     }
 
     @media (max-width: 767px) {
-        .mobile-left {
-            text-align: left !important;
-            margin-top: 1rem;
+        .ui.tiny.statistics .statistic {
+            margin-bottom: 1em;
+        }
+
+        pre {
+            font-size: 0.75em;
         }
     }
 </style>

@@ -12,7 +12,10 @@ try {
     api.listIssues({ state: "closed", per_page: 20 }),
   ]);
 
-  allIssues = [...openData, ...closedData];
+  const openIssues = openData.filter((i) => !i.pull_request);
+  const closedIssues = closedData.filter((i) => !i.pull_request);
+
+  allIssues = [...openIssues, ...closedIssues];
 } catch (e) {
   error = e.message;
 }

@@ -25,18 +25,17 @@ function getPRStatus(pr) {
     if (pr.merged_at)
         return {
             color: "purple",
-            icon: "git pull request",
+            // icon: "git pull request", // Replaced per request
             text: "Συγχωνεύθηκε",
         };
-    if (pr.state === "closed")
-        return { color: "red", icon: "times circle", text: "Κλειστό" };
-    return { color: "green", icon: "git pull request", text: "Ανοιχτό" };
+    if (pr.state === "closed") return { color: "red", text: "Κλειστό" }; // Icon handled in template
+    return { color: "green", text: "Ανοιχτό" }; // Icon handled in template
 }
 ---
 
 <Layout>
     <h1 class="ui header">
-        <i class="code branch icon"></i>
+        <i class="file alternate outline icon"></i>
         <div class="content">
             Προτάσεις (Pull Requests)
             <div class="sub header">
@@ -59,11 +58,22 @@ function getPRStatus(pr) {
         {
             prs.map((pr) => {
                 const status = getPRStatus(pr);
+                const iconColor =
+                    status.color === "purple"
+                        ? "#a333c8"
+                        : status.color === "red"
+                          ? "#db2828"
+                          : "#21ba45";
+
                 return (
-                    <a href={`/prs/${pr.number}`} class="item">
+                    <a
+                        href={`/prs/${pr.number}`}
+                        class="item"
+                        style={pr.state === "closed" ? "opacity: 0.75;" : ""}
+                    >
                         <i
-                            class={`large middle aligned ${status.icon} icon`}
-                            style={`color: ${status.color === "purple" ? "#a333c8" : status.color === "red" ? "#db2828" : "#21ba45"};`}
+                            class="large middle aligned shuffle icon"
+                            style={`color: ${iconColor};`}
                         />
                         <div class="content">
                             <div
@@ -72,7 +82,7 @@ function getPRStatus(pr) {
                             >
                                 {pr.title}
                                 <div
-                                    class={`ui horizontal label ${status.color} tiny`}
+                                    class={`ui horizontal label ${status.color} tiny basic`}
                                     style="margin-left: 0.5em;"
                                 >
                                     {status.text}
@@ -82,9 +92,10 @@ function getPRStatus(pr) {
                                 #{pr.number} από{" "}
                                 <strong>{pr.user.login}</strong> •{" "}
                                 {formatDate(pr.created_at)}
-                                <span style="float: right; color: #666;">
-                                    <i class="code icon" /> {pr.base.ref} &larr;{" "}
-                                    {pr.head.ref}
+                                <span style="float: right; color: #666; font-family: monospace; font-size: 0.9em;">
+                                    <span class="ui label tiny basic">
+                                        {pr.base.ref} &larr; {pr.head.ref}
+                                    </span>
                                 </span>
                             </div>
                         </div>
