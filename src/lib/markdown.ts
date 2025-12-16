@@ -1,7 +1,7 @@
 import { marked } from "marked";
-import DOMPurify from "isomorphic-dompurify";
 
-export function parseMarkdownSafe(markdown: string): string {
+export async function parseMarkdownSafe(markdown: string): Promise<string> {
+  const { default: DOMPurify } = await import("isomorphic-dompurify");
   const html = marked.parse(markdown) as string;
   return DOMPurify.sanitize(html, {
     ALLOWED_TAGS: [
