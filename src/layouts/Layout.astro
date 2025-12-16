@@ -1,6 +1,7 @@
 ---
 import "fomantic-ui-css/semantic.min.css";
-import Analytics from '@vercel/analytics/astro'
+import Analytics from '@vercel/analytics/astro';
+import { formatDateCompact } from "../lib/utils";
 
 const menuItems = [
   { href: "/", label: "Αρχική", icon: "home", id: "home" },
