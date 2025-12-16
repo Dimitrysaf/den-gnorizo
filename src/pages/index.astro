@@ -2,8 +2,9 @@
 import Layout from "../layouts/Layout.astro";
 import Tools from "../components/Tools.astro";
 import DocNode from "../components/DocNode.astro";
-import { createGitHubAPI, resetCache } from "../lib/github.fetch"; // <--- Import resetCache
+import { createGitHubAPI, resetCache } from "../lib/github.fetch";
 import { marked } from "marked";
+import { parseMarkdownSafe } from "../lib/markdown";
 
 if (Astro.url.searchParams.get("refresh") === "true") {
   resetCache();
@@ -36,7 +37,7 @@ try {
 
         const cleanMarkdown = rawMarkdown.replace(/^---[\s\S]+?---/, "").trim();
 
-        node.htmlContent = marked.parse(cleanMarkdown);
+        node.htmlContent = parseMarkdownSafe(cleanMarkdown);
       } catch (err) {
         console.error(`Σφάλμα ${node.file}`, err);
         node.htmlContent = `<p style="color:red">Κάτι πήγε πολύ στραβά, δες την κονσόλα για μυνήματα σφάλματος.</p>`;

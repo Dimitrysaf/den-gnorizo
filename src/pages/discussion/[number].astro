@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import { createGitHubAPI } from "../../lib/github.fetch";
 import { marked } from "marked";
+import { parseMarkdownSafe } from "../../lib/markdown";
 
 const { number } = Astro.params;
 const api = createGitHubAPI();
@@ -64,7 +65,9 @@ function getPollPercentage(votes, total) {
                             class="ui content text-body"
                             style="font-size: 1.15em; line-height: 1.6;"
                         >
-                            <div set:html={marked.parse(discussion.body)} />
+                            <div
+                                set:html={parseMarkdownSafe(discussion.body)}
+                            />
                         </div>
 
                         {discussion.poll && (
@@ -201,7 +204,7 @@ function getPollPercentage(votes, total) {
                                     </div>
                                     <div class="text">
                                         <div
-                                            set:html={marked.parse(
+                                            set:html={parseMarkdownSafe(
                                                 comment.body,
                                             )}
                                         />
@@ -238,7 +241,7 @@ function getPollPercentage(votes, total) {
                                                             </div>
                                                             <div class="text">
                                                                 <div
-                                                                    set:html={marked.parse(
+                                                                    set:html={parseMarkdownSafe(
                                                                         reply.body,
                                                                     )}
                                                                 />

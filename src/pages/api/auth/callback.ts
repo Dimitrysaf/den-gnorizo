@@ -6,10 +6,17 @@ export const GET: APIRoute = async ({ request, cookies, redirect }) => {
 
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
+  const state = url.searchParams.get("state");
 
-  if (!code) {
+  // Validate state (CSRF protection)
+  const savedState = cookies.get("oauth_state");
+  if (!code || !state || !savedState || state !== savedState.value) {
+    cookies.delete("oauth_state", { path: "/" });
     return redirect("/403");
   }
+
+  // Clear the state cookie after validation
+  cookies.delete("oauth_state", { path: "/" });
 
   try {
     // 1. Exchange code for access token
@@ -50,26 +57,33 @@ export const GET: APIRoute = async ({ request, cookies, redirect }) => {
 
     const userData = await userResponse.json();
 
-    // 3. Create Session Object
-    // We only store essential public info in the cookie to keep it small
+    // 3. Create Session Object (WITHOUT storing the token in cookie)
     const sessionData = {
       login: userData.login,
       avatar_url: userData.avatar_url,
       id: userData.id,
       name: userData.name,
       html_url: userData.html_url,
-      accessToken: accessToken, // Storing token to make API calls on their behalf if needed
+      // DO NOT store accessToken here - it's a security risk
     };
 
-    // 4. Set Cookie
-    // httpOnly: true (JS cannot read it, prevents XSS)
-    // secure: true (HTTPS only)
-    // maxAge: 7 days
+    // 4. Set Cookie with proper security settings
     cookies.set("gh_session", JSON.stringify(sessionData), {
       path: "/",
       httpOnly: true,
-      secure: import.meta.env.PROD, 
-      maxAge: 60 * 60 * 24 * 7, 
+      secure: import.meta.env.PROD,
+      sameSite: "lax", // CSRF protection
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    });
+
+    // Store the access token separately in a more secure cookie
+    // This is still not ideal but better than mixing with user data
+    cookies.set("gh_token", accessToken, {
+      path: "/",
+      httpOnly: true,
+      secure: import.meta.env.PROD,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7,
     });
 
     return redirect("/settings");

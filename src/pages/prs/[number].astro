@@ -2,6 +2,8 @@
 import Layout from "../../layouts/Layout.astro";
 import { createGitHubAPI } from "../../lib/github.fetch";
 import { marked } from "marked";
+import { parseMarkdownSafe } from "../../lib/markdown";
+
 
 const { number } = Astro.params;
 const api = createGitHubAPI();
@@ -126,7 +128,7 @@ function getPRStatus(pr) {
                             class="ui content text-body"
                             style="margin-top: 1.5rem; font-size: 1.1em; line-height: 1.6;"
                         >
-                            <div set:html={marked.parse(pr.body)} />
+                            <div set:html={parseMarkdownSafe(pr.body)} />
                         </div>
                     )}
 
@@ -212,7 +214,7 @@ function getPRStatus(pr) {
                                 </div>
                                 <div class="text">
                                     <div
-                                        set:html={marked.parse(comment.body)}
+                                        set:html={parseMarkdownSafe(comment.body)}
                                     />
                                 </div>
                             </div>

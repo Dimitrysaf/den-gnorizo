@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import { createGitHubAPI } from "../../lib/github.fetch";
 import { marked } from "marked";
+import { parseMarkdownSafe } from "../../lib/markdown";
 
 const { number } = Astro.params;
 const api = createGitHubAPI();
@@ -84,7 +85,7 @@ function getContrastColor(hexcolor) {
                             style="font-size: 1.15em; line-height: 1.6;"
                         >
                             <div
-                                set:html={marked.parse(
+                                set:html={parseMarkdownSafe(
                                     issue.body || "*(Δεν υπάρχει περιγραφή)*",
                                 )}
                             />
@@ -150,7 +151,7 @@ function getContrastColor(hexcolor) {
                                 </div>
                                 <div class="text">
                                     <div
-                                        set:html={marked.parse(comment.body)}
+                                        set:html={parseMarkdownSafe(comment.body)}
                                     />
                                 </div>
                             </div>
