@@ -1,5 +1,6 @@
 ---
 import "fomantic-ui-css/semantic.min.css";
+import Analytics from '@vercel/analytics/astro'
 
 const menuItems = [
   { href: "/", label: "Αρχική", icon: "home", id: "home" },
@@ -145,6 +146,7 @@ const isActive = (href: string) => {
   </head>
 
   <body>
+    <Analytics/>
     <div id="tab-loader">
       <div class="ui active large text loader">Φόρτωση...</div>
     </div>
