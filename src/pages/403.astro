@@ -1,0 +1,12 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ErrorView from "../components/ErrorView.astro";
+---
+
+<Layout>
+    <ErrorView 
+        code={403} 
+        title="Απαγορεύεται η Πρόσβαση" 
+        message="Δεν έχετε τα απαραίτητα δικαιώματα για να δείτε αυτή τη σελίδα ή να εκτελέσετε αυτή την ενέργεια."
+    />
+</Layout>

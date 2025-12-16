@@ -7,11 +7,12 @@ let icon = "exclamation triangle";
 if (code === 404) icon = "compass outline";
 if (code === 500) icon = "server";
 if (code === 501) icon = "hard hat";
+if (code === 403) icon = "hand paper";
 ---
 
 <div class="ui container center aligned" style="padding-top: 10vh; padding-bottom: 10vh;">
     <h1 class="ui icon header" style="font-size: 4em;">
-        <i class={`${icon} icon`} style="margin-bottom: 0.2em; color: #fbbd08;"></i>
+        <i class={`${icon} icon`} style="margin-bottom: 0.2em; color: #ff0000;"></i>
         <div class="content">
             {code}
             <div class="sub header" style="font-size: 0.4em; margin-top: 0.5em;">
