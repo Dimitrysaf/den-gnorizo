@@ -1,0 +1,63 @@
+---
+import EditableNode from "./EditableNode.astro";
+
+const { node, index } = Astro.props;
+
+// Determine semantic style based on type
+const getStyle = (type) => {
+  switch (type) {
+    case "title": return { icon: "university", color: "blue", label: "Τίτλος" };
+    case "chapter": return { icon: "book", color: "teal", label: "Κεφάλαιο" };
+    case "section": return { icon: "folder open", color: "grey", label: "Τμήμα" };
+    case "article": return { icon: "file alternate", color: "black", label: "Άρθρο" };
+    default: return { icon: "circle", color: "grey", label: "Στοιχείο" };
+  }
+};
+
+const style = getStyle(node.type);
+---
+
+{/* The 'data-id' and classes are vital for the JavaScript to rebuild the JSON */}
+<div class="item node-item" data-type={node.type} data-file={node.file || ""}>
+    
+    {/* Handle for Dragging (Only visible in Drag Mode) */}
+    <i class="large bars icon drag-handle" style="cursor: move; color: #ccc;"></i>
+
+    {/* Icon visual */}
+    <i class={`large ${style.icon} middle aligned icon`}></i>
+
+    <div class="content" style="width: 100%;">
+        <div class="ui form">
+            <div class="inline fields" style="margin: 0;">
+                
+                {/* Number Input */}
+                <div class="field" style="width: 80px;">
+                    <div class="ui label tiny">{style.label}</div>
+                    <input type="number" class="node-number" value={node.number} style="padding: 5px;" />
+                </div>
+
+                {/* Name Input */}
+                <div class="field" style="flex-grow: 1;">
+                    <input type="text" class="node-name" value={node.name} style="font-weight: bold;" />
+                </div>
+
+                {/* Actions */}
+                {node.type === 'article' && node.file && (
+                    <div class="field">
+                        <a href={`/edit/article/${node.file}`} class="ui button icon basic tiny" title="Επεξεργασία Κειμένου">
+                            <i class="pencil alternate icon"></i>
+                        </a>
+                    </div>
+                )}
+            </div>
+        </div>
+
+        {/* Nested Children Container */}
+        {/* 'nested-sortable' class is for SortableJS */}
+        <div class="ui list nested-sortable" style="margin-left: 2em; margin-top: 1em; min-height: 10px; border-left: 1px dashed #eee; padding-left: 1em;">
+            {node.children && node.children.map((child, i) => (
+                <EditableNode node={child} index={i} />
+            ))}
+        </div>
+    </div>
+</div>

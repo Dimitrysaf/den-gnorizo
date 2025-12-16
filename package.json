@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
+    "dev": "dotenv -e .env.dev -- astro dev",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
@@ -17,6 +17,7 @@
     "markdown-it": "^14.1.0"
   },
   "devDependencies": {
-    "@types/markdown-it": "^14.1.2"
+    "@types/markdown-it": "^14.1.2",
+    "dotenv-cli": "^11.0.0"
   }
 }

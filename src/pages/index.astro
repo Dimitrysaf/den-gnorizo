@@ -6,6 +6,10 @@ import { createGitHubAPI, resetCache } from "../lib/github.fetch";
 import { parseMarkdownSafe } from "../lib/markdown";
 import { handleError } from "../lib/errors";
 
+// Check Login Status for Edit Button
+const sessionCookie = Astro.cookies.get("gh_session");
+const isLoggedIn = !!(sessionCookie && sessionCookie.value);
+
 if (Astro.url.searchParams.get("refresh") === "true") {
   resetCache();
 }
@@ -37,15 +41,7 @@ try {
       node.htmlContent = await parseMarkdownSafe(cleanMarkdown);
     } catch (err) {
       console.error(`Error loading file ${node.file}:`, err);
-      node.htmlContent = `
-        <div class="ui warning message">
-          <i class="exclamation triangle icon"></i>
-          <div class="content">
-            <div class="header">Σφάλμα φόρτωσης περιεχομένου</div>
-            <p>Το περιεχόμενο "${node.name}" δεν ήταν δυνατό να φορτωθεί προσωρινά.</p>
-          </div>
-        </div>
-      `;
+      node.htmlContent = `<div class="ui warning message">...</div>`;
     }
   });
 
@@ -56,43 +52,46 @@ try {
     ),
   ]);
 } catch (e) {
-  console.error("Index page error:", e);
   const errorInfo = handleError(e);
   error = errorInfo.message;
 }
 ---
 
 <Layout>
-  <h1 class="ui header">
-    <i class="home icon"></i>
-    <div class="content">
-      Αρχική
-      <div class="sub header">Η κύρια προβολή του Συντάγματος και εκδώσεων</div>
-    </div>
-  </h1>
-  <Tools />
-  {
-    error && (
-      <div class="ui negative icon message">
-        <i class="exclamation circle icon" />
+  <div class="ui grid">
+    <div class="fourteen wide column">
+      <h1 class="ui header">
+        <i class="home icon"></i>
         <div class="content">
-          <div class="header">Σφάλμα φόρτωσης</div>
-          <p>{error}</p>
+          Αρχική
+          <div class="sub header">Η κύρια προβολή του Συντάγματος</div>
         </div>
-      </div>
-    )
-  }
+      </h1>
+    </div>
+    <div class="two wide column right aligned">
+      {
+        isLoggedIn && (
+          <a
+            href="/edit"
+            class="ui icon button basic"
+            title="Επεξεργασία Δομής"
+          >
+            <i class="pencil alternate icon" />
+          </a>
+        )
+      }
+    </div>
+  </div>
+
+  <Tools />
+
+  {error && <div class="ui negative icon message">{error}</div>}
 
   {
     documentStructure.length > 0
       ? documentStructure.map((node) => <DocNode node={node} />)
       : !error && (
-          <div class="ui placeholder segment">
-            <div class="ui icon header">
-              <i class="file outline icon" />
-              Δεν υπάρχει περιεχόμενο διαθέσιμο.
-            </div>
-          </div>
+          <div class="ui placeholder segment">Δεν υπάρχει περιεχόμενο.</div>
         )
   }
 </Layout>

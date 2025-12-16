@@ -1,0 +1,169 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import EditableNode from "../../components/EditableNode.astro";
+import { createGitHubAPI } from "../../lib/github.fetch";
+
+// 1. Security Check
+const sessionCookie = Astro.cookies.get("gh_session");
+if (!sessionCookie || !sessionCookie.value) {
+    return Astro.redirect("/403");
+}
+const user = JSON.parse(sessionCookie.value);
+
+// 2. Fetch Structure
+const api = createGitHubAPI();
+let documentStructure = [];
+let error = null;
+
+try {
+    const rawMeta = await api.getFileContent("metadata.json");
+    const metaJson = JSON.parse(rawMeta);
+    documentStructure = metaJson.structure || [];
+} catch (e) {
+    error = e.message;
+}
+---
+
+<Layout>
+    {/* SortableJS CDN */}
+    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+
+    <div class="ui container">
+        <h1 class="ui header">
+            <i class="sitemap icon"></i>
+            <div class="content">
+                Επεξεργασία Δομής
+                <div class="sub header">Αλλάξτε τη σειρά και τους τίτλους των άρθρων</div>
+            </div>
+        </h1>
+
+        <div class="ui top attached segment secondary">
+            <div class="ui toggle checkbox" id="mode-toggle">
+                <input type="checkbox" name="public" checked>
+                <label>Λειτουργία Ταξινόμησης (Drag & Drop)</label>
+            </div>
+            
+            <div class="right menu" style="float: right;">
+                <button class="ui button green" id="save-structure">
+                    <i class="save icon"></i> Αποθήκευση Δομής
+                </button>
+            </div>
+        </div>
+
+        <div class="ui attached segment">
+            {error && <div class="ui negative message">{error}</div>}
+
+            <div class="ui list" id="root-sortable">
+                {documentStructure.map((node, i) => (
+                    <EditableNode node={node} index={i} />
+                ))}
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script is:inline define:vars={{ userLogin: user.login }}>
+    document.addEventListener("DOMContentLoaded", function() {
+        const rootEl = document.getElementById('root-sortable');
+        const nestedEls = document.querySelectorAll('.nested-sortable');
+        const modeToggle = document.getElementById('mode-toggle');
+        const inputs = document.querySelectorAll('input');
+        const saveBtn = document.getElementById('save-structure');
+
+        // 1. Initialize SortableJS
+        // Function to apply sortable to a list
+        const initSortable = (el) => {
+            new Sortable(el, {
+                group: 'nested', // allow dragging between lists
+                animation: 150,
+                fallbackOnBody: true,
+                swapThreshold: 0.65,
+                handle: '.drag-handle', // Only drag via handle
+                disabled: false 
+            });
+        };
+
+        initSortable(rootEl);
+        nestedEls.forEach(el => initSortable(el));
+
+        // 2. Toggle Mode Logic
+        $('.ui.checkbox').checkbox({
+            onChecked: () => {
+                // Drag Mode ON: Enable handles, Disable inputs
+                $('.drag-handle').show();
+                $('input.node-name, input.node-number').prop('disabled', true).addClass('disabled');
+            },
+            onUnchecked: () => {
+                // Edit Mode ON: Disable handles, Enable inputs
+                $('.drag-handle').hide();
+                $('input.node-name, input.node-number').prop('disabled', false).removeClass('disabled');
+            }
+        });
+
+        // Initialize state (Drag Mode default)
+        $('input.node-name, input.node-number').prop('disabled', true);
+
+
+        // 3. Serialization Logic (DOM -> JSON)
+        const serializeNode = (domItem) => {
+            const type = domItem.getAttribute('data-type');
+            const file = domItem.getAttribute('data-file');
+            
+            // Get inputs within this item (scoped)
+            const numberInput = domItem.querySelector(':scope > .content > .form .node-number');
+            const nameInput = domItem.querySelector(':scope > .content > .form .node-name');
+            const listContainer = domItem.querySelector(':scope > .content > .nested-sortable');
+
+            const node = {
+                type: type,
+                number: numberInput ? parseInt(numberInput.value) : 0,
+                name: nameInput ? nameInput.value : "Untitled",
+            };
+
+            if (file) node.file = file;
+
+            // Recurse children
+            if (listContainer && listContainer.children.length > 0) {
+                node.children = Array.from(listContainer.children).map(child => serializeNode(child));
+            }
+
+            return node;
+        };
+
+        // 4. Save Action
+        saveBtn.addEventListener('click', async () => {
+            saveBtn.classList.add('loading', 'disabled');
+
+            try {
+                // Rebuild the full JSON
+                const newStructure = Array.from(rootEl.children).map(child => serializeNode(child));
+                const fullMetadata = {
+                    title: "Σύνταγμα της Ελλάδας", // Or fetch existing title
+                    structure: newStructure
+                };
+
+                // Send to API
+                const res = await fetch('/api/propose', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        filePath: 'metadata.json',
+                        content: JSON.stringify(fullMetadata, null, 4), // Pretty print
+                        message: `Αναδιάρθρωση δομής από @${userLogin}`
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || "Unknown Error");
+
+                // Success
+                window.location.href = data.pr_url;
+
+            } catch (err) {
+                console.error(err);
+                alert("Σφάλμα αποθήκευσης: " + err.message);
+                saveBtn.classList.remove('loading', 'disabled');
+            }
+        });
+    });
+</script>
