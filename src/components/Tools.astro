@@ -1,5 +1,7 @@
 ---
 import { createGitHubAPI } from "../lib/github.fetch";
+import { handleError } from "../lib/errors";
+import { formatDateCompact, truncateText } from "../lib/utils";
 
 let branches = [];
 let latestCommit = null;
@@ -16,22 +18,12 @@ try {
         }
     }
 } catch (e) {
-    error = e instanceof Error ? e.message : "Failed to fetch branches";
-    console.error("Tools.astro - Error fetching branches:", error);
+    const errorInfo = handleError(e);
+    error = errorInfo.message;
+    console.error("Tools.astro - Error fetching branches:", e);
 }
 
 const uniqueId = `tools-${Math.random().toString(36).substr(2, 9)}`;
-
-function formatDate(dateString: string) {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat("el-GR", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-    }).format(date);
-}
 ---
 
 <div class="ui segment" data-tools-id={uniqueId}>
@@ -116,7 +108,7 @@ function formatDate(dateString: string) {
                                             {latestCommit.sha.substring(0, 7)}
                                             <span style="margin-left: 1rem;">
                                                 <i class="clock icon" />{" "}
-                                                {formatDate(
+                                                {formatDateCompact(
                                                     latestCommit.commit.author
                                                         .date,
                                                 )}
@@ -186,7 +178,7 @@ function formatDate(dateString: string) {
             $errorMessage.hide();
         });
 
-        function formatDate(dateString) {
+        function formatDateCompact(dateString) {
             const date = new Date(dateString);
             return new Intl.DateTimeFormat("el-GR", {
                 year: "numeric",
@@ -234,7 +226,7 @@ function formatDate(dateString: string) {
                                 <div style="margin-top: 0.5rem; color: #888;">
                                   <i class="code icon"></i> ${commit.sha.substring(0, 7)}
                                   <span style="margin-left: 1rem;">
-                                    <i class="clock icon"></i> ${formatDate(commit.commit.author.date)}
+                                    <i class="clock icon"></i> ${formatDateCompact(commit.commit.author.date)}
                                   </span>
                                 </div>
                               </div>

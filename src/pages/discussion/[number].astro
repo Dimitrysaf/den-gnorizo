@@ -3,6 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import { createGitHubAPI } from "../../lib/github.fetch";
 import { marked } from "marked";
 import { parseMarkdownSafe } from "../../lib/markdown";
+import { formatDateCompactCompact, truncateText } from "../lib/utils";
 
 const { number } = Astro.params;
 const api = createGitHubAPI();
@@ -16,13 +17,6 @@ try {
     }
 } catch (e) {
     error = e.message;
-}
-
-function formatDate(dateString) {
-    return new Intl.DateTimeFormat("el-GR", {
-        dateStyle: "full",
-        timeStyle: "short",
-    }).format(new Date(dateString));
 }
 
 function getPollPercentage(votes, total) {
@@ -147,7 +141,7 @@ function getPollPercentage(votes, total) {
                                     </div>
                                     <div class="item" style="color: #666;">
                                         <i class="calendar alternate outline icon" />
-                                        {formatDate(discussion.createdAt)}
+                                        {formatDateCompact(discussion.createdAt)}
                                     </div>
                                 </div>
                             </div>
@@ -193,7 +187,7 @@ function getPollPercentage(votes, total) {
                                     <a class="author">{comment.author.login}</a>
                                     <div class="metadata">
                                         <span class="date">
-                                            {formatDate(comment.createdAt)}
+                                            {formatDateCompact(comment.createdAt)}
                                         </span>
                                         {isAnswer && (
                                             <span class="ui left pointing green label tiny">
@@ -234,7 +228,7 @@ function getPollPercentage(votes, total) {
                                                             </a>
                                                             <div class="metadata">
                                                                 <span class="date">
-                                                                    {formatDate(
+                                                                    {formatDateCompact(
                                                                         reply.createdAt,
                                                                     )}
                                                                 </span>

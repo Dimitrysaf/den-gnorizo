@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { createGitHubAPI } from "../../lib/github.fetch";
+import { formatDateCompact } from "../../lib/utils";
 
 const api = createGitHubAPI();
 let commits = [];
@@ -10,13 +11,6 @@ try {
     commits = await api.listCommits({ per_page: 30, page: 1 });
 } catch (e) {
     error = e.message;
-}
-
-function formatDate(dateString) {
-    return new Intl.DateTimeFormat("el-GR", {
-        dateStyle: "full",
-        timeStyle: "short",
-    }).format(new Date(dateString));
 }
 ---
 
@@ -58,7 +52,7 @@ function formatDate(dateString) {
                             </span>
                             <span class="ui tiny label">
                                 <i class="clock icon" />{" "}
-                                {formatDate(commit.commit.author.date)}
+                                {formatDateCompact(commit.commit.author.date)}
                             </span>
                             <span class="ui tiny basic label">
                                 <i class="code icon" />{" "}
@@ -108,7 +102,7 @@ function formatDate(dateString) {
         const $btn = $("#load-more-btn");
         const $list = $("#commits-list");
 
-        function formatDate(dateString) {
+        function formatDateCompact(dateString) {
             const date = new Date(dateString);
             return new Intl.DateTimeFormat("el-GR", {
                 dateStyle: "full",
@@ -144,7 +138,7 @@ function formatDate(dateString) {
                                 <i class="user icon"></i> ${commit.commit.author.name}
                             </span>
                             <span class="ui tiny label">
-                                <i class="clock icon"></i> ${formatDate(commit.commit.author.date)}
+                                <i class="clock icon"></i> ${formatDateCompact(commit.commit.author.date)}
                             </span>
                             <span class="ui tiny basic label">
                                 <i class="code icon"></i> ${commit.sha.substring(0, 7)}

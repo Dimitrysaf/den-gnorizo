@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { createGitHubAPI } from "../lib/github.fetch";
+import { formatDateCompact, truncateText } from "../lib/utils";
 
 const api = createGitHubAPI();
 let prs = [];
@@ -10,14 +11,6 @@ try {
     prs = await api.listPullRequests({ state: "all", per_page: 30 });
 } catch (e) {
     error = e.message;
-}
-
-function formatDate(dateString) {
-    return new Intl.DateTimeFormat("el-GR", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-    }).format(new Date(dateString));
 }
 
 function getPRStatus(pr) {
@@ -89,7 +82,7 @@ function getPRStatus(pr) {
                             <div class="description">
                                 #{pr.number} από{" "}
                                 <strong>{pr.user.login}</strong> •{" "}
-                                {formatDate(pr.created_at)}
+                                {formatDateCompact(pr.created_at)}
                                 <span style="float: right; color: #666; font-family: monospace; font-size: 0.9em;">
                                     <span class="ui label tiny basic">
                                         {pr.base.ref} &larr; {pr.head.ref}

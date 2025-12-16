@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { createGitHubAPI } from "../lib/github.fetch";
+import { formatDateCompactCompact, truncateText } from "../lib/utils";
 
 const api = createGitHubAPI();
 let pinned = [];
@@ -15,18 +16,6 @@ try {
   others = (data.others || []).filter((d) => !pinnedIds.has(d.number));
 } catch (e) {
   error = e.message;
-}
-
-function formatDate(dateString) {
-  return new Intl.DateTimeFormat("el-GR", {
-    day: "numeric",
-    month: "long",
-  }).format(new Date(dateString));
-}
-
-function getPreview(text) {
-  if (!text) return "";
-  return text.length > 140 ? text.substring(0, 140) + "..." : text;
 }
 ---
 
@@ -72,10 +61,10 @@ function getPreview(text) {
                 <div class="meta">
                   <span>{topic.author.login}</span>
                   <span>•</span>
-                  <span>{formatDate(topic.createdAt)}</span>
+                  <span>{formatDateCompact(topic.createdAt)}</span>
                 </div>
                 <div class="description" style="margin-top: 1rem; color: #444;">
-                  {getPreview(topic.bodyText)}
+                  {truncateText(topic.bodyText)}
                 </div>
                 <div class="extra" style="margin-top: 1rem;">
                   <div class="ui label">
@@ -105,7 +94,7 @@ function getPreview(text) {
               </div>
               <div class="description">
                 #{topic.number} άνοιξε από <strong>{topic.author.login}</strong>{" "}
-                • {formatDate(topic.createdAt)}
+                • {formatDateCompact(topic.createdAt)}
                 <span style="float: right; color: #666;">
                   <i class="comment icon" /> {topic.comments.totalCount}
                 </span>

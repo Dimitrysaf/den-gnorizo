@@ -24,13 +24,6 @@ try {
     error = e.message;
 }
 
-function formatDate(dateString) {
-    return new Intl.DateTimeFormat("el-GR", {
-        dateStyle: "full",
-        timeStyle: "short",
-    }).format(new Date(dateString));
-}
-
 function getContrastColor(hexcolor) {
     const r = parseInt(hexcolor.substr(0, 2), 16);
     const g = parseInt(hexcolor.substr(2, 2), 16);
@@ -109,7 +102,7 @@ function getContrastColor(hexcolor) {
                                     </div>
                                     <div class="item" style="color: #666;">
                                         <i class="calendar alternate outline icon" />
-                                        {formatDate(issue.created_at)}
+                                        {formatDateCompact(issue.created_at)}
                                     </div>
                                 </div>
                             </div>
@@ -146,7 +139,7 @@ function getContrastColor(hexcolor) {
                                 <a class="author">{comment.user.login}</a>
                                 <div class="metadata">
                                     <span class="date">
-                                        {formatDate(comment.created_at)}
+                                        {formatDateCompact(comment.created_at)}
                                     </span>
                                 </div>
                                 <div class="text">
