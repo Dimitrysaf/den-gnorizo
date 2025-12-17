@@ -10,90 +10,271 @@ if (!sessionCookie || !sessionCookie.value) {
 const user = JSON.parse(sessionCookie.value);
 
 const api = createGitHubAPI();
-let documentStructure = [];
+let flatList = [];
 let error = null;
 
 try {
     const rawMeta = await api.getFileContent("metadata.json");
     const metaJson = JSON.parse(rawMeta);
-    documentStructure = metaJson.structure || [];
+    const tree = metaJson.structure || [];
+
+    // Flatten helper
+    function flatten(nodes) {
+        let result = [];
+        for (const node of nodes) {
+            const { children, ...rest } = node;
+            result.push(rest);
+            if (children && children.length > 0) {
+                result = result.concat(flatten(children));
+            }
+        }
+        return result;
+    }
+    flatList = flatten(tree);
 } catch (e) {
     error = e.message;
 }
 ---
 
 <Layout>
-    <script
-        is:inline
-        src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"
-    ></script>
-
-    <div class="ui container">
-        <h1 class="ui header">
-            <i class="edit icon"></i>
-            <div class="content">
-                Επεξεργασία Συντάγματος
-                <div class="sub header">Τροποποίηση δομής και περιεχομένου</div>
-            </div>
+    {/* Main Container acts as context for Sticky */}
+    <div class="ui container" id="edit-context">
+        {/* HEADER */}
+        <h1 class="ui header" style="margin-bottom: 1rem;">
+            Επεξεργασία Συντάγματος
         </h1>
 
-        {/* TOOLBAR */}
-        <div class="ui secondary menu stackable">
-            <div class="item">
-                <div class="ui toggle checkbox" id="edit-mode-toggle">
-                    <input type="checkbox" name="public" />
-                    <label>Λειτουργία Επεξεργασίας</label>
+        {/* TOOLBAR SEGMENT (Sticky on Desktop, Normal on Mobile) */}
+        <div class="ui sticky" id="toolbar-sticky" style="z-index: 999;">
+            <div
+                class="ui segment"
+                style="padding: 0; background: white; margin-bottom: 1em; border: 1px solid rgba(34,36,38,.15);"
+            >
+                {/* TOOLBAR - COMPACT ICON BUTTONS */}
+                <div
+                    class="ui menu"
+                    style="border: none; box-shadow: none; margin: 0; justify-content: flex-end;"
+                >
+                    <div class="item" style="padding: 0.5em;">
+                        <button
+                            class="ui button basic icon"
+                            id="open-json-btn"
+                            title="Επεξεργασία JSON"
+                        >
+                            <i class="code icon"></i>
+                        </button>
+                    </div>
+
+                    <div class="right item" style="padding: 0.5em;">
+                        <div class="ui icon buttons">
+                            {/* Discard / Exit */}
+                            <button
+                                class="ui button red basic icon"
+                                id="discard-btn"
+                                title="Έξοδος χωρίς αποθήκευση"
+                            >
+                                <i class="times icon"></i>
+                            </button>
+
+                            {/* Add Dropdown */}
+                            <div
+                                class="ui dropdown button basic icon"
+                                id="add-dropdown"
+                                title="Προσθήκη στοιχείου"
+                            >
+                                <i class="plus icon"></i>
+                                <div class="menu">
+                                    <div
+                                        class="item add-node-item"
+                                        data-type="title"
+                                    >
+                                        <i
+                                            class="university icon"
+                                            style="color: #2185d0;"></i> Τίτλος
+                                    </div>
+                                    <div
+                                        class="item add-node-item"
+                                        data-type="chapter"
+                                    >
+                                        <i
+                                            class="book icon"
+                                            style="color: #00b5ad;"></i> Κεφάλαιο
+                                    </div>
+                                    <div
+                                        class="item add-node-item"
+                                        data-type="section"
+                                    >
+                                        <i
+                                            class="folder open icon"
+                                            style="color: #767676;"></i> Τμήμα
+                                    </div>
+                                    <div class="divider"></div>
+                                    <div
+                                        class="item add-node-item"
+                                        data-type="article"
+                                    >
+                                        <i
+                                            class="file alternate icon"
+                                            style="color: #333;"></i> Άρθρο
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Save */}
+                            <button
+                                class="ui button green icon"
+                                id="save-fork-btn"
+                                title="Αποθήκευση στο Fork"
+                            >
+                                <i class="save icon"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="right menu">
-                <button class="ui button primary" id="save-structure-btn">
-                    <i class="save icon"></i> Αποθήκευση & Υποβολή
-                </button>
             </div>
         </div>
 
         {error && <div class="ui negative message">{error}</div>}
 
-        {/* MAIN LIST */}
+        {/* MAIN LIST - FLAT */}
         <div class="ui segment basic" style="padding: 0;">
-            <div class="ui list" id="root-sortable">
+            <div class="ui list" id="root-list">
                 {
-                    documentStructure.map((node, i) => (
+                    flatList.map((node, i) => (
                         <EditableNode node={node} index={i} />
                     ))
                 }
             </div>
         </div>
+    </div>
 
-        {/* JSON PREVIEW AREA */}
-        <div
-            class="ui segment"
-            id="json-preview-container"
-            style="background: #f8f9fa; margin-top: 2rem;"
-        >
-            <h4 class="ui header">
-                <i class="code icon"></i> Live Προεπισκόπηση
-            </h4>
-            <pre
-                id="json-preview-content"
-                style="overflow: auto; max-height: 400px; font-size: 0.85em; background: white; padding: 1em; border: 1px solid #ddd; border-radius: 4px;">
-            </pre>
+    {/* HIDDEN TEMPLATE (MATCHES EditableNode.astro) */}
+    <div id="node-template" style="display:none;">
+        <div class="item node-item" data-type="" data-file="">
+            <div class="content">
+                <div
+                    class="ui segment"
+                    style="padding: 0.5em; margin: 0.2em 0; display: flex; align-items: center; gap: 10px; box-shadow: none; border: 1px solid rgba(0,0,0,0.1);"
+                >
+                    <div class="ui icon buttons mini basic">
+                        <button class="ui button move-up-btn" tabindex="-1"
+                            ><i class="angle up icon"></i></button
+                        >
+                        <button class="ui button move-down-btn" tabindex="-1"
+                            ><i class="angle down icon"></i></button
+                        >
+                    </div>
+
+                    <div
+                        style="display: flex; align-items: center; gap: 5px; white-space: nowrap;"
+                    >
+                        <span class="type-text" style="color: #666;">TYPE</span>
+                        <div class="ui transparent input" style="width: 50px;">
+                            <input
+                                type="number"
+                                class="node-number"
+                                placeholder="#"
+                                style="text-align: center; font-weight: bold;"
+                            />
+                        </div>
+                    </div>
+
+                    <span style="color: #ccc;">-</span>
+
+                    <div
+                        class="ui left pointing red basic label hidden validation-error"
+                    >
+                        Error
+                    </div>
+
+                    <div
+                        class="ui transparent input fluid"
+                        style="flex-grow: 1;"
+                    >
+                        <input
+                            type="text"
+                            class="node-name"
+                            placeholder="Όνομα..."
+                        />
+                    </div>
+
+                    <div class="ui icon buttons mini basic action-buttons">
+                        <button class="ui button delete-node-btn" tabindex="-1"
+                            ><i class="trash alternate outline icon"
+                            ></i></button
+                        >
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    {/* EDIT CONTENT MODAL */}
+    {/* JSON EDITOR MODAL */}
+    <div class="ui modal" id="json-modal">
+        <i class="close icon"></i>
+        <div class="header">Επεξεργασία JSON</div>
+        <div class="content">
+            <div class="ui form">
+                <div class="field">
+                    <label>Raw Metadata JSON</label>
+                    <textarea
+                        id="json-editor-content"
+                        style="font-family: monospace; min-height: 400px; font-size: 0.9em;"
+                    ></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="actions">
+            <div class="ui black deny button">Ακύρωση</div>
+            <button
+                class="ui positive right labeled icon button"
+                id="apply-json-btn"
+            >
+                Εφαρμογή Αλλαγών
+                <i class="checkmark icon"></i>
+            </button>
+        </div>
+    </div>
+
+    {/* OTHER MODALS */}
+    <div class="ui mini modal" id="general-alert-modal">
+        <div class="header" id="alert-header">Μήνυμα</div>
+        <div class="content"><p id="alert-body"></p></div>
+        <div class="actions">
+            <div class="ui positive right labeled icon button">
+                OK<i class="checkmark icon"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui mini modal" id="confirmation-modal">
+        <div class="header">Επιβεβαίωση</div>
+        <div class="content"><p id="confirm-body"></p></div>
+        <div class="actions">
+            <div class="ui negative button">Ακύρωση</div>
+            <div
+                class="ui positive right labeled icon button"
+                id="confirm-yes-btn"
+            >
+                Ναι<i class="checkmark icon"></i>
+            </div>
+        </div>
+    </div>
+
     <div class="ui modal" id="article-modal">
         <i class="close icon"></i>
         <div class="header">Επεξεργασία Άρθρου</div>
         <div class="content">
             <div class="ui form">
                 <div class="field disabled">
-                    <label>Αρχείο</label>
-                    <input type="text" id="modal-filename" readonly />
+                    <label>Αρχείο</label><input
+                        type="text"
+                        id="modal-filename"
+                        readonly
+                    />
                 </div>
                 <div class="field">
-                    <label>Περιεχόμενο</label>
-                    <textarea
+                    <label>Περιεχόμενο</label><textarea
                         id="modal-content"
                         style="font-family: monospace; min-height: 400px;"
                     ></textarea>
@@ -105,199 +286,343 @@ try {
             <button
                 class="ui positive right labeled icon button"
                 id="save-article-btn"
+                >Αποθήκευση<i class="checkmark icon"></i></button
             >
-                Αποθήκευση Αλλαγών
-                <i class="checkmark icon"></i>
-            </button>
         </div>
     </div>
 </Layout>
 
 <style>
-    /* Drag & Drop Styling */
-    .drag-handle {
-        display: block;
-    }
-    .node-number,
-    .node-name {
-        pointer-events: none;
-        border: none;
-        background: transparent;
-        opacity: 0.8;
+    /* Fix Z-Index for Dropdown over Sticky */
+    .ui.dropdown .menu {
+        z-index: 2000 !important;
     }
 
-    .editing-mode .drag-handle {
-        display: none !important;
-    }
-    .editing-mode .node-number,
-    .editing-mode .node-name {
-        pointer-events: auto;
-        border-bottom: 1px solid #ddd;
-        opacity: 1;
-    }
-    .editing-mode .ui.segment {
-        border: 1px solid #2185d0;
+    /* Disable Sticky on Mobile to prevent layout issues */
+    @media only screen and (max-width: 767px) {
+        .ui.sticky {
+            position: static !important;
+            width: 100% !important;
+            left: auto !important;
+            top: auto !important;
+        }
     }
 </style>
 
 <script is:inline>
     $(function () {
-        const rootEl = document.getElementById("root-sortable");
-        const nestedEls = document.querySelectorAll(".nested-sortable");
-        const toggle = $("#edit-mode-toggle");
-        const container = $(".ui.container");
-
-        // 1. Sortable Logic with Validation
-        const initSortable = (el) => {
-            new Sortable(el, {
-                group: "nested",
-                animation: 0, // Disable animation
-                handle: ".drag-handle",
-                fallbackOnBody: true,
-                swapThreshold: 0.65,
-                direction: "vertical", // Suggest vertical movement
-                onEnd: function () {
-                    updatePreview();
-                },
-                // === REAL-TIME VALIDATION ===
-                onMove: function (evt) {
-                    const draggedType = evt.dragged.dataset.type;
-
-                    // Find parent type of the target list
-                    const targetList = evt.to;
-                    const parentItem = targetList.closest(".node-item");
-                    const parentType = parentItem
-                        ? parentItem.dataset.type
-                        : "root";
-
-                    // Define strict hierarchy ranks
-                    const rank = {
-                        root: 0,
-                        title: 10,
-                        chapter: 20,
-                        section: 30, // Section/Part roughly same level
-                        article: 40,
-                    };
-
-                    const draggedRank = rank[draggedType] || 99;
-                    const parentRank = rank[parentType] || 0;
-
-                    // Rule 1: Root list can ONLY contain Titles
-                    if (parentType === "root" && draggedType !== "title") {
-                        return false; // Cancel move
-                    }
-
-                    // Rule 2: Articles cannot contain anything
-                    if (parentType === "article") {
-                        return false;
-                    }
-
-                    // Rule 3: Hierarchy enforcement
-                    // A child must have a higher rank number than its parent
-                    // e.g. Title(10) -> Article(40) OK
-                    // e.g. Article(40) -> Title(10) FAIL
-                    if (draggedRank <= parentRank) {
-                        return false;
-                    }
-
-                    return true; // Allow move
-                },
-            });
-        };
-
-        initSortable(rootEl);
-        nestedEls.forEach((el) => initSortable(el));
-
-        // 2. Mode Toggle
-        toggle.checkbox({
-            onChecked: () => container.addClass("editing-mode"),
-            onUnchecked: () => container.removeClass("editing-mode"),
+        // --- INIT ---
+        // Force click action for mobile compatibility
+        $("#add-dropdown").dropdown({
+            on: "click",
+            action: "hide", // Don't act like a select box, just a menu
         });
 
-        // 3. Serialize Logic
-        const serializeNode = (domItem) => {
-            const type = domItem.getAttribute("data-type");
-            const file = domItem.getAttribute("data-file");
-            const numberInput = domItem.querySelector(
-                ":scope > .content > .segment .node-number",
-            );
-            const nameInput = domItem.querySelector(
-                ":scope > .content > .segment .node-name",
-            );
-            const listContainer = domItem.querySelector(
-                ":scope > .content > .nested-sortable",
-            );
+        // --- STICKY INIT (Desktop Only check inside) ---
+        if (window.innerWidth > 767) {
+            $(".ui.sticky").sticky({
+                context: "#edit-context",
+                offset: 50,
+            });
+        }
 
-            const node = {
-                type: type,
-                number: numberInput ? parseInt(numberInput.value) : 0,
-                name: nameInput ? nameInput.value : "",
-            };
+        // --- HELPERS ---
+        function showAlert(title, message, isError = false) {
+            $("#alert-header").text(title);
+            $("#alert-body").html(message);
+            const modal = $("#general-alert-modal");
+            if (isError) modal.find(".header").css("color", "#db2828");
+            else modal.find(".header").css("color", "");
+            modal.modal("show");
+        }
 
-            if (file) node.file = file;
+        let onConfirmAction = null;
+        function showConfirm(message, callback) {
+            $("#confirm-body").text(message);
+            onConfirmAction = callback;
+            $("#confirmation-modal")
+                .modal({
+                    closable: false,
+                    onApprove: function () {
+                        if (onConfirmAction) onConfirmAction();
+                    },
+                })
+                .modal("show");
+        }
 
-            if (listContainer && listContainer.children.length > 0) {
-                node.children = Array.from(listContainer.children).map(
-                    (child) => serializeNode(child),
-                );
+        function updateButtonStates() {
+            const items = $("#root-list .node-item");
+            items.find(".move-up-btn, .move-down-btn").removeClass("disabled");
+            items.first().find(".move-up-btn").addClass("disabled");
+            items.last().find(".move-down-btn").addClass("disabled");
+            if (window.innerWidth > 767) {
+                $(".ui.sticky").sticky("refresh");
             }
-            return node;
-        };
+        }
 
-        const getFullStructure = () => {
-            return Array.from(rootEl.children).map((child) =>
-                serializeNode(child),
+        // --- MOVEMENT ---
+        $(document).on("click", ".move-up-btn", function () {
+            const current = $(this).closest(".node-item");
+            const prev = current.prev(".node-item");
+            if (prev.length > 0) {
+                prev.before(current);
+                updateButtonStates();
+            }
+        });
+
+        $(document).on("click", ".move-down-btn", function () {
+            const current = $(this).closest(".node-item");
+            const next = current.next(".node-item");
+            if (next.length > 0) {
+                next.after(current);
+                updateButtonStates();
+            }
+        });
+
+        // --- DISCARD / EXIT ---
+        $("#discard-btn").on("click", function () {
+            showConfirm(
+                "Θέλετε να βγείτε; Όλες οι μη αποθηκευμένες αλλαγές θα χαθούν.",
+                function () {
+                    window.location.href = "/";
+                },
             );
+        });
+
+        // --- ADD / DELETE ---
+        const labels = {
+            title: "Τίτλος",
+            chapter: "Κεφάλαιο",
+            section: "Τμήμα",
+            article: "Άρθρο",
+        };
+        const styles = {
+            title: "font-size: 1.5em; font-weight: 900;",
+            chapter: "font-size: 1.3em; font-weight: 800;",
+            section: "font-size: 1.1em; font-weight: 700;",
+            article: "font-size: 1em; font-weight: normal;",
         };
 
-        const updatePreview = () => {
-            const structure = getFullStructure();
+        function createDomNode(data) {
+            const type = data.type;
+            const template = $("#node-template").html();
+            const $newNode = $(template);
+
+            $newNode.attr("data-type", type);
+            $newNode.attr("data-file", data.file || "");
+
+            $newNode
+                .find(".type-text")
+                .text(labels[type])
+                .attr("style", `color: #666; ${styles[type]}`);
+            $newNode
+                .find(".node-number")
+                .val(data.number)
+                .attr(
+                    "style",
+                    `text-align: center; font-weight: bold; ${styles[type]}`,
+                );
+
+            $newNode
+                .find(".node-name")
+                .val(data.name)
+                .attr("style", styles[type]);
+
+            const actionContainer = $newNode.find(".action-buttons");
+            if (type === "article") {
+                const file =
+                    data.file ||
+                    `new-article-${Math.random().toString(36).substr(2, 5)}.md`;
+                if (!data.file) $newNode.attr("data-file", file);
+
+                const editBtn = `<button class="ui button edit-content-btn" data-file="${file}" title="Επεξεργασία" style="margin:0;"><i class="pencil alternate icon"></i></button>`;
+                actionContainer.prepend(editBtn);
+            } else {
+                const disabledBtn = `<button class="ui button disabled" style="opacity: 0.3;"><i class="pencil alternate icon"></i></button>`;
+                actionContainer.prepend(disabledBtn);
+            }
+            return $newNode;
+        }
+
+        // Dropdown Items Click Handler
+        $(document).on("click", ".add-node-item", function () {
+            const type = $(this).data("type");
+            const $newNode = createDomNode({ type, number: 0, name: "" });
+            $("#root-list").append($newNode);
+            updateButtonStates();
+            $("html, body").animate({ scrollTop: $(document).height() }, 500);
+        });
+
+        $(document).on("click", ".delete-node-btn", function () {
+            const item = $(this).closest(".node-item");
+            showConfirm(
+                "Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το στοιχείο;",
+                function () {
+                    item.remove();
+                    updateButtonStates();
+                },
+            );
+        });
+
+        updateButtonStates();
+
+        // --- SERIALIZE & REBUILD ---
+        const serializeNode = (domItem) => {
+            const el = $(domItem);
+            return {
+                type: el.attr("data-type"),
+                number: parseInt(el.find(".node-number").val()) || 0,
+                name: el.find(".node-name").val() || "",
+                file: el.attr("data-file") || undefined,
+                children: [],
+            };
+        };
+
+        const rebuildTree = () => {
+            const root = [];
+            let stack = [];
+            const levels = { title: 1, chapter: 2, section: 3, article: 4 };
+            let isValid = true;
+            $(".validation-error").addClass("hidden");
+
+            $("#root-list > .node-item").each(function () {
+                const node = serializeNode(this);
+                const currentLevel = levels[node.type] || 5;
+
+                if (stack.length === 0 && node.type !== "title") {
+                    $(this)
+                        .find(".validation-error")
+                        .text("Πρέπει να ξεκινά με Τίτλο")
+                        .removeClass("hidden");
+                    isValid = false;
+                }
+
+                while (stack.length > 0) {
+                    const lastParent = stack[stack.length - 1];
+                    const lastLevel = levels[lastParent.type];
+                    if (lastLevel < currentLevel) break;
+                    stack.pop();
+                }
+
+                if (stack.length === 0) {
+                    root.push(node);
+                } else {
+                    const parent = stack[stack.length - 1];
+                    if (parent.type === "article") {
+                        $(this)
+                            .find(".validation-error")
+                            .text("Άκυρη Ιεραρχία")
+                            .removeClass("hidden");
+                        isValid = false;
+                    }
+                    parent.children.push(node);
+                }
+
+                if (node.type !== "article") stack.push(node);
+            });
+
+            return { tree: root, isValid };
+        };
+
+        // --- JSON EDITOR ---
+        function flattenTree(nodes) {
+            let result = [];
+            nodes.forEach((node) => {
+                const { children, ...rest } = node;
+                result.push(rest);
+                if (children) result = result.concat(flattenTree(children));
+            });
+            return result;
+        }
+
+        $("#open-json-btn").click(function () {
+            const { tree } = rebuildTree();
             const json = JSON.stringify(
-                { title: "Σύνταγμα", structure },
+                { title: "Σύνταγμα", structure: tree },
                 null,
                 4,
             );
-            $("#json-preview-content").text(json);
-        };
+            $("#json-editor-content").val(json);
+            $("#json-modal").modal("show");
+        });
 
-        updatePreview();
-        $("#root-sortable").on("input", "input", updatePreview);
+        $("#apply-json-btn").click(function () {
+            try {
+                const raw = $("#json-editor-content").val();
+                const parsed = JSON.parse(raw);
+                if (!parsed.structure)
+                    throw new Error("Missing 'structure' key.");
 
-        // 4. Save Structure
-        $("#save-structure-btn").on("click", async function () {
+                const flat = flattenTree(parsed.structure);
+                const list = $("#root-list");
+                list.empty();
+                flat.forEach((node) => {
+                    list.append(createDomNode(node));
+                });
+
+                updateButtonStates();
+                rebuildTree(); // validate
+            } catch (e) {
+                alert("JSON Error: " + e.message);
+                return false;
+            }
+        });
+
+        // --- SAVE ACTION ---
+        $("#save-fork-btn").on("click", async function () {
             const btn = $(this);
+            const { tree, isValid } = rebuildTree();
+
+            if (!isValid) {
+                showAlert(
+                    "Σφάλμα Δομής",
+                    "Ελέγξτε τις κόκκινες ενδείξεις.",
+                    true,
+                );
+                return;
+            }
+
             btn.addClass("loading disabled");
 
             try {
-                const structure = getFullStructure();
                 const fullMetadata = {
                     title: "Σύνταγμα της Ελλάδας",
-                    structure,
+                    structure: tree,
                 };
-
-                const res = await fetch("/api/propose", {
+                const res = await fetch("/api/draft", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         filePath: "metadata.json",
                         content: JSON.stringify(fullMetadata, null, 4),
-                        message: "Αναδιάρθρωση δομής (Metadata Update)",
+                        message: "Ενημέρωση δομής (Editor)",
                     }),
                 });
 
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error);
-
-                window.location.href = data.pr_url;
+                showAlert(
+                    "Επιτυχία",
+                    `Αποθηκεύτηκε στο Branch: <b>${data.branchName}</b>`,
+                );
             } catch (err) {
-                alert("Σφάλμα Δομής: " + err.message);
+                showAlert("Σφάλμα", err.message, true);
+            } finally {
                 btn.removeClass("loading disabled");
             }
         });
 
-        // 5. Article Modal Logic
-        $(".edit-content-btn").on("click", async function () {
+        // --- CONTENT MODAL ---
+        $(document).on("click", ".edit-content-btn", async function () {
             const file = $(this).data("file");
+            if (!file || file.startsWith("new-article")) {
+                showAlert(
+                    "Προσοχή",
+                    "Πρέπει πρώτα να αποθηκεύσετε τη δομή.",
+                    true,
+                );
+                return;
+            }
             const modal = $("#article-modal");
             $("#modal-filename").val(file);
             $("#modal-content").val("Φόρτωση...");
@@ -324,20 +649,22 @@ try {
             const content = $("#modal-content").val();
 
             try {
-                const res = await fetch("/api/propose", {
+                const res = await fetch("/api/draft", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         filePath: file,
                         content: content,
-                        message: `Ενημέρωση περιεχομένου: ${file}`,
+                        message: `Επεξεργασία άρθρου: ${file}`,
                     }),
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error);
-                window.location.href = data.pr_url;
+                $("#article-modal").modal("hide");
+                showAlert("Επιτυχία", "Το άρθρο αποθηκεύτηκε στο Fork σας!");
             } catch (err) {
-                alert("Error: " + err.message);
+                showAlert("Σφάλμα", err.message, true);
+            } finally {
                 btn.removeClass("loading disabled");
             }
         });

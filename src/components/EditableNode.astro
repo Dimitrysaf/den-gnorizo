@@ -1,6 +1,4 @@
 ---
-import EditableNode from "./EditableNode.astro";
-
 const { node } = Astro.props;
 
 // Helper for labels
@@ -21,76 +19,120 @@ const getTypeLabel = (type) => {
 
 const label = getTypeLabel(node.type);
 const isArticle = node.type === "article";
+
+const textStyle = (() => {
+    switch (node.type) {
+        case "title":
+            return "font-size: 1.5em; font-weight: 900;";
+        case "chapter":
+            return "font-size: 1.3em; font-weight: 800;";
+        case "section":
+            return "font-size: 1.1em; font-weight: 700;";
+        case "article":
+            return "font-size: 1em; font-weight: normal;";
+        default:
+            return "";
+    }
+})();
 ---
 
 <div class="item node-item" data-type={node.type} data-file={node.file || ""}>
     <div class="content">
-        {/* Main Row - Plain & Simple */}
         <div
             class="ui segment"
-            style="padding: 0.5em; margin: 0.2em 0; display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid rgba(34,36,38,.15); box-shadow: none;"
+            style="padding: 0.5em; margin: 0.2em 0; display: flex; align-items: center; gap: 10px; box-shadow: none; border: 1px solid rgba(0,0,0,0.1);"
         >
-            {/* 1. Drag Handle (6 Dots) */}
-            <i
-                class="grip vertical icon drag-handle"
-                style="cursor: move; color: #555; margin: 0; opacity: 0.7;"></i>
-
-            {/* 2. Type Label (Plain Grey) */}
-            <div
-                class="ui label tiny basic"
-                style="color: #666; border-color: #ddd;"
-            >
-                {label}
+            {/* 1. Move Controls */}
+            <div class="ui icon buttons mini basic">
+                <button
+                    class="ui button move-up-btn"
+                    tabindex="-1"
+                    title="Πάνω"
+                >
+                    <i class="angle up icon"></i>
+                </button>
+                <button
+                    class="ui button move-down-btn"
+                    tabindex="-1"
+                    title="Κάτω"
+                >
+                    <i class="angle down icon"></i>
+                </button>
             </div>
 
-            {/* 3. Number Input */}
-            <div class="ui transparent input" style="width: 40px;">
-                <input
-                    type="number"
-                    class="node-number"
-                    value={node.number}
-                    disabled
-                    style="text-align: center; font-family: monospace;"
-                />
+            {/* 2. Type Text & Number */}
+            <div
+                style="display: flex; align-items: center; gap: 5px; white-space: nowrap;"
+            >
+                {/* Applied textStyle here per request */}
+                <span class="type-text" style={`color: #666; ${textStyle}`}
+                    >{label}</span
+                >
+
+                <div class="ui transparent input" style="width: 50px;">
+                    <input
+                        type="number"
+                        class="node-number"
+                        value={node.number}
+                        placeholder="#"
+                        style={`text-align: center; font-weight: bold; ${textStyle}`}
+                    />
+                </div>
+            </div>
+
+            <span style="color: #ccc;">-</span>
+
+            {/* 3. Validation Error (Hidden) */}
+            <div
+                class="ui left pointing red basic label hidden validation-error"
+            >
+                Error
             </div>
 
             {/* 4. Name Input */}
-            <div class="ui transparent input" style="flex-grow: 1;">
+            <div class="ui transparent input fluid" style="flex-grow: 1;">
                 <input
                     type="text"
                     class="node-name"
                     value={node.name}
-                    disabled
-                    style={!isArticle ? "font-weight: 700;" : ""}
+                    style={textStyle}
                 />
             </div>
 
-            {/* 5. Article Edit Trigger */}
-            {
-                isArticle && (
-                    <button
-                        class="ui icon button basic tiny edit-content-btn"
-                        data-file={node.file}
-                        title="Επεξεργασία Κειμένου"
-                        style="margin: 0; box-shadow: none !important;"
-                    >
-                        <i class="pencil alternate icon" style="color: #666;" />
-                    </button>
-                )
-            }
-        </div>
-
-        {/* Recursive Children - Minimal Indentation */}
-        <div
-            class="ui list nested-sortable"
-            style="margin-left: 15px; border-left: 2px solid #e0e0e0; padding-left: 5px; min-height: 5px;"
-        >
-            {
-                node.children &&
-                    node.children.map((child, i) => (
-                        <EditableNode node={child} index={i} />
-                    ))
-            }
+            {/* 5. Actions */}
+            <div class="ui icon buttons mini basic">
+                {
+                    isArticle ? (
+                        <button
+                            class="ui button edit-content-btn"
+                            data-file={node.file}
+                            title="Επεξεργασία Κειμένου"
+                        >
+                            <i class="pencil alternate icon" />
+                        </button>
+                    ) : (
+                        <button
+                            class="ui button disabled"
+                            style="opacity: 0.3;"
+                        >
+                            <i class="pencil alternate icon" />
+                        </button>
+                    )
+                }
+                <button
+                    class="ui button delete-node-btn"
+                    title="Διαγραφή"
+                    tabindex="-1"
+                >
+                    <i class="trash alternate outline icon"></i>
+                </button>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+    .hidden {
+        display: none !important;
+    }
+</style>
