@@ -9,6 +9,16 @@ interface CommitOptions {
   branchName?: string;
 }
 
+interface PROptions {
+  token: string;
+  owner: string;
+  repo: string;
+  userLogin: string;
+  branchName: string;
+  title: string;
+  body: string;
+}
+
 const baseUrl = "https://api.github.com";
 
 async function req(url: string, method: string, token: string, body?: any) {
@@ -26,7 +36,6 @@ async function req(url: string, method: string, token: string, body?: any) {
 // Logic to Fork -> Branch -> Commit
 export async function saveToFork(opts: CommitOptions) {
   const { token, owner, repo, filePath, content, message, userLogin } = opts;
-  // Use existing branch name if provided, else create new timestamped branch
   const branchName = opts.branchName || `patch-${Date.now()}`;
 
   // 1. Check if User has a Fork
@@ -45,7 +54,6 @@ export async function saveToFork(opts: CommitOptions) {
 
   // 3. Create/Check Branch on User's Fork
   try {
-    // Try to create branch from upstream base
     await req(`${baseUrl}/repos/${userLogin}/${repo}/git/refs`, 'POST', token, {
       ref: `refs/heads/${branchName}`,
       sha: baseSha
@@ -64,6 +72,7 @@ export async function saveToFork(opts: CommitOptions) {
   }
 
   // 5. Commit File
+  // Buffer is Node.js native, safe for Vercel
   const contentBase64 = Buffer.from(content).toString('base64');
   await req(`${baseUrl}/repos/${userLogin}/${repo}/contents/${filePath}`, 'PUT', token, {
     message: message,
@@ -73,4 +82,18 @@ export async function saveToFork(opts: CommitOptions) {
   });
 
   return branchName;
+}
+
+// === THIS IS THE MISSING EXPORT ===
+export async function createPR(opts: PROptions) {
+  const { token, owner, repo, userLogin, branchName, title, body } = opts;
+
+  const pr = await req(`${baseUrl}/repos/${owner}/${repo}/pulls`, 'POST', token, {
+    title: title,
+    body: body,
+    head: `${userLogin}:${branchName}`,
+    base: "main"
+  });
+
+  return pr;
 }
