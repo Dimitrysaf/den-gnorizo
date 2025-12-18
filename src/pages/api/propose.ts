@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { proposeChange } from "../../lib/github.manage";
+import { saveToFork } from "../../lib/github.manage"; // Fixed import
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   const session = cookies.get("gh_session");
@@ -8,7 +8,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   }
 
   const user = JSON.parse(session.value);
-  
+
   try {
     const body = await request.json();
     const { filePath, content, message } = body;
@@ -17,18 +17,18 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 });
     }
 
-    // Call the heavy lifting function
-    const pr = await proposeChange({
-        token: user.accessToken, // We need the user's token for forking
-        owner: import.meta.env.GITHUB_OWNER,
-        repo: import.meta.env.GITHUB_CONTENT_REPO,
-        filePath,
-        content,
-        message,
-        userLogin: user.login
+    const branchName = await saveToFork({
+      token: user.accessToken,
+      owner: import.meta.env.GITHUB_OWNER,
+      repo: import.meta.env.GITHUB_CONTENT_REPO,
+      filePath,
+      content,
+      message,
+      userLogin: user.login
     });
 
-    return new Response(JSON.stringify({ success: true, pr_url: pr.html_url }), { status: 200 });
+    // Return the branch name so UI can tell user
+    return new Response(JSON.stringify({ success: true, branchName }), { status: 200 });
 
   } catch (error) {
     console.error(error);
